@@ -1,1118 +1,924 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="description"
-    content="FITTRACK — acompanhe seus hábitos, atividade física, sono e evolução pessoal."
-  >
+    <meta name="theme-color" content="#071018">
+    <meta name="description" content="FITTRACK — Seu progresso. Seus hábitos. Sua evolução.">
 
-  <title>FITTRACK — Seu progresso. Seus hábitos. Sua evolução.</title>
+    <title>FITTRACK — Hábitos & Evolução</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  >
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- TOAST -->
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<header class="site-header">
 
+    <a href="#inicio" class="brand" aria-label="FITTRACK">
 
-  <!-- =========================
-       HEADER
-  ========================== -->
+        <!-- LOGO FITTRACK EMBUTIDA DIRETAMENTE NO CÓDIGO -->
+        <svg class="brand-logo" viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg">
 
-  <header class="site-header" id="site-header">
+            <defs>
+                <linearGradient id="fittrackGradient"
+                    x1="0"
+                    y1="0"
+                    x2="1"
+                    y2="1">
 
-    <a href="#home" class="brand" aria-label="FITTRACK início">
-      <span class="brand-mark">F</span>
-      <span>FIT<span>TRACK</span></span>
+                    <stop offset="0%" stop-color="#55e9c2"/>
+                    <stop offset="100%" stop-color="#12b88d"/>
+
+                </linearGradient>
+            </defs>
+
+            <!-- Símbolo -->
+            <g transform="translate(35 32)">
+
+                <path
+                    fill="#ffffff"
+                    d="M0 0h106v25H31v29h62v25H31v47H0z"
+                />
+
+                <path
+                    fill="url(#fittrackGradient)"
+                    d="M58 25h48v25H58z"
+                />
+
+                <path
+                    fill="url(#fittrackGradient)"
+                    d="M31 79h62v25H31z"
+                />
+
+            </g>
+
+            <!-- FITTRACK -->
+            <text
+                x="180"
+                y="105"
+                fill="#ffffff"
+                font-family="Arial, Helvetica, sans-serif"
+                font-size="67"
+                font-weight="800"
+                letter-spacing="1"
+            >
+                FIT<tspan fill="#20d6a3">TRACK</tspan>
+            </text>
+
+            <!-- Slogan -->
+            <text
+                x="184"
+                y="139"
+                fill="#91a0aa"
+                font-family="Arial, Helvetica, sans-serif"
+                font-size="15"
+                font-weight="600"
+                letter-spacing="4"
+            >
+                SEU PROGRESSO. SEUS HÁBITOS. SUA EVOLUÇÃO.
+            </text>
+
+        </svg>
+
     </a>
 
-    <button
-      class="menu-toggle"
-      id="menu-toggle"
-      aria-label="Abrir menu"
-      aria-expanded="false"
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
 
-    <nav class="main-nav" id="main-nav">
+    <nav class="main-nav" id="mainNav">
 
-      <a href="#home">Início</a>
-
-      <a href="#features">Recursos</a>
-
-      <a href="#how">Como funciona</a>
-
-      <a href="#pricing">Preços</a>
-
-      <button class="btn btn-primary btn-small js-start">
-        Começar agora
-      </button>
+        <a href="#inicio">Início</a>
+        <a href="#recursos">Recursos</a>
+        <a href="#como-funciona">Como funciona</a>
+        <a href="#ajuda">Ajuda</a>
+        <a href="#precos">Preços</a>
 
     </nav>
 
-  </header>
+
+    <button
+        class="btn btn-primary btn-small"
+        data-open-app
+    >
+        Começar agora
+    </button>
 
 
-  <!-- =========================
-       LANDING PAGE
-  ========================== -->
+    <button
+        class="menu-toggle"
+        id="menuToggle"
+        aria-label="Abrir menu"
+    >
+        ☰
+    </button>
 
-  <main id="landing">
+</header>
 
 
-    <!-- HERO -->
+<main>
 
-    <section class="hero section" id="home">
+<!-- =====================================================
+     HERO
+===================================================== -->
 
-      <div class="hero-copy reveal">
+<section class="hero section" id="inicio">
 
-        <div class="eyebrow">
-          <span class="pulse-dot"></span>
-          Seu bem-estar, no seu ritmo
-        </div>
+    <div class="hero-copy">
+
+        <span class="eyebrow">
+            SEU NOVO RITMO
+        </span>
 
         <h1>
-          Construa hábitos.
-          <br>
-          <em>Acompanhe sua evolução.</em>
+            Construa hábitos.<br>
+            <span>Acompanhe sua evolução.</span>
         </h1>
 
-        <p class="hero-text">
-          O FITTRACK reúne hábitos, hidratação, atividade física,
-          sono e metas em um só lugar para você entender sua rotina
-          e acompanhar seu progresso.
+        <p>
+            Organize sua rotina, acompanhe água,
+            atividade física, sono e hábitos em um só lugar.
         </p>
 
         <div class="hero-actions">
 
-          <button class="btn btn-primary btn-large js-start">
-            Começar grátis
-            <span>→</span>
-          </button>
+            <button
+                class="btn btn-primary"
+                data-open-app
+            >
+                Começar grátis
+            </button>
 
-          <a
-            class="btn btn-ghost btn-large"
-            href="#features"
-          >
-            Conhecer recursos
-          </a>
+            <a
+                class="btn btn-ghost"
+                href="#recursos"
+            >
+                Conhecer recursos
+            </a>
 
         </div>
 
         <div class="trust-row">
 
-          <span>✓ Gratuito para começar</span>
-
-          <span>✓ Seus dados ficam no dispositivo</span>
-
-          <span>✓ Sem promessas milagrosas</span>
+            <span>✓ Simples</span>
+            <span>✓ Privado</span>
+            <span>✓ Feito para sua rotina</span>
 
         </div>
-
-      </div>
-
-
-      <!-- DASHBOARD VISUAL -->
-
-      <div class="hero-dashboard reveal">
-
-        <div class="dashboard-window">
-
-          <div class="window-top">
-
-            <div class="window-dots">
-              <i></i>
-              <i></i>
-              <i></i>
-            </div>
-
-            <span>
-              FITTRACK / Hoje
-            </span>
-
-            <span class="window-status">
-              ● Ativo
-            </span>
-
-          </div>
-
-
-          <div class="mini-dashboard">
-
-            <div class="mini-heading">
-
-              <div>
-
-                <span class="mini-greeting">
-                  Boa noite, João 👋
-                </span>
-
-                <strong>
-                  Seu progresso hoje
-                </strong>
-
-              </div>
-
-              <div class="mini-avatar">
-                J
-              </div>
-
-            </div>
-
-
-            <div class="mini-grid">
-
-
-              <!-- ÁGUA -->
-
-              <div class="mini-card water">
-
-                <span class="mini-icon">
-                  💧
-                </span>
-
-                <small>
-                  Água
-                </small>
-
-                <strong>
-                  1,5<span>L</span>
-                </strong>
-
-                <div class="mini-progress">
-                  <i style="width:75%"></i>
-                </div>
-
-                <small>
-                  75% da meta
-                </small>
-
-              </div>
-
-
-              <!-- ATIVIDADE -->
-
-              <div class="mini-card">
-
-                <span class="mini-icon">
-                  ◷
-                </span>
-
-                <small>
-                  Atividade
-                </small>
-
-                <strong>
-                  35<span> min</span>
-                </strong>
-
-                <div class="mini-progress">
-                  <i style="width:70%"></i>
-                </div>
-
-                <small>
-                  70% da meta
-                </small>
-
-              </div>
-
-
-              <!-- SONO -->
-
-              <div class="mini-card">
-
-                <span class="mini-icon">
-                  ☾
-                </span>
-
-                <small>
-                  Sono
-                </small>
-
-                <strong>
-                  7<span>h 20</span>
-                </strong>
-
-                <div class="mini-progress">
-                  <i style="width:91%"></i>
-                </div>
-
-                <small>
-                  Boa rotina
-                </small>
-
-              </div>
-
-
-              <!-- HÁBITOS -->
-
-              <div class="mini-card">
-
-                <span class="mini-icon">
-                  ✓
-                </span>
-
-                <small>
-                  Hábitos
-                </small>
-
-                <strong>
-                  4<span>/5</span>
-                </strong>
-
-                <div class="mini-progress">
-                  <i style="width:80%"></i>
-                </div>
-
-                <small>
-                  80% concluído
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div class="mini-bottom">
-
-              <div class="streak-mini">
-
-                <span>
-                  🔥
-                </span>
-
-                <div>
-
-                  <strong>
-                    12 dias
-                  </strong>
-
-                  <small>
-                    sequência atual
-                  </small>
-
-                </div>
-
-              </div>
-
-
-              <div class="sparkline">
-
-                <i style="height:35%"></i>
-                <i style="height:52%"></i>
-                <i style="height:44%"></i>
-                <i style="height:68%"></i>
-                <i style="height:58%"></i>
-                <i style="height:82%"></i>
-                <i style="height:94%"></i>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="float-card float-one">
-          🔥
-          <strong>12 dias</strong>
-          <small>de sequência</small>
-        </div>
-
-        <div class="float-card float-two">
-          +
-          <strong>35 min</strong>
-          <small>atividade</small>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         STATS
-    ========================== -->
-
-    <section class="stats-strip">
-
-      <div>
-        <strong>01</strong>
-        <span>lugar para sua rotina</span>
-      </div>
-
-      <div>
-        <strong>06</strong>
-        <span>áreas de acompanhamento</span>
-      </div>
-
-      <div>
-        <strong>07</strong>
-        <span>dias de visão rápida</span>
-      </div>
-
-      <div>
-        <strong>∞</strong>
-        <span>hábitos personalizados</span>
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         FEATURES
-    ========================== -->
-
-    <section
-      class="section features-section"
-      id="features"
-    >
-
-      <div class="section-heading reveal">
-
-        <span class="section-label">
-          RECURSOS
-        </span>
-
-        <h2>
-          Tudo o que importa.
-          <br>
-          <em>Sem complicação.</em>
-        </h2>
-
-        <p>
-          Uma visão simples da sua rotina para você registrar,
-          observar e ajustar seus hábitos ao longo do tempo.
-        </p>
-
-      </div>
-
-
-      <div class="feature-grid">
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            💧
-          </div>
-
-          <h3>
-            Água
-          </h3>
-
-          <p>
-            Acompanhe sua hidratação diária e visualize
-            o quanto já avançou na sua meta.
-          </p>
-
-          <span class="feature-number">
-            01
-          </span>
-
-        </article>
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            🚶
-          </div>
-
-          <h3>
-            Atividade
-          </h3>
-
-          <p>
-            Registre caminhadas, exercícios e outros
-            movimentos que fazem parte da sua rotina.
-          </p>
-
-          <span class="feature-number">
-            02
-          </span>
-
-        </article>
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            ☾
-          </div>
-
-          <h3>
-            Sono
-          </h3>
-
-          <p>
-            Registre suas horas de sono e observe como
-            sua rotina tem se comportado.
-          </p>
-
-          <span class="feature-number">
-            03
-          </span>
-
-        </article>
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            ✓
-          </div>
-
-          <h3>
-            Hábitos
-          </h3>
-
-          <p>
-            Crie hábitos personalizados, marque cada
-            conquista e acompanhe suas sequências.
-          </p>
-
-          <span class="feature-number">
-            04
-          </span>
-
-        </article>
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            ▥
-          </div>
-
-          <h3>
-            Progresso
-          </h3>
-
-          <p>
-            Veja os últimos sete dias em uma visualização
-            rápida e fácil de entender.
-          </p>
-
-          <span class="feature-number">
-            05
-          </span>
-
-        </article>
-
-
-        <article class="feature-card reveal">
-
-          <div class="feature-icon">
-            🔥
-          </div>
-
-          <h3>
-            Sequência
-          </h3>
-
-          <p>
-            Mantenha o foco observando quantos dias seguidos
-            você vem cumprindo sua rotina.
-          </p>
-
-          <span class="feature-number">
-            06
-          </span>
-
-        </article>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         COMO FUNCIONA
-    ========================== -->
-
-    <section
-      class="section how-section"
-      id="how"
-    >
-
-      <div class="section-heading reveal">
-
-        <span class="section-label">
-          COMO FUNCIONA
-        </span>
-
-        <h2>
-          Comece em poucos
-          <br>
-          <em>passos.</em>
-        </h2>
-
-      </div>
-
-
-      <div class="steps">
-
-
-        <div class="step reveal">
-
-          <span>
-            01
-          </span>
-
-          <div>
-
-            <h3>
-              Defina sua rotina
-            </h3>
-
-            <p>
-              Escolha os hábitos e metas que fazem
-              sentido para você.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div class="step reveal">
-
-          <span>
-            02
-          </span>
-
-          <div>
-
-            <h3>
-              Registre o dia
-            </h3>
-
-            <p>
-              Atualize água, atividade, sono e hábitos
-              em poucos toques.
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div class="step reveal">
-
-          <span>
-            03
-          </span>
-
-          <div>
-
-            <h3>
-              Observe sua evolução
-            </h3>
-
-            <p>
-              Use o histórico e os gráficos para
-              entender sua consistência.
-            </p>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         PREÇOS
-    ========================== -->
-
-    <section
-      class="section pricing-section"
-      id="pricing"
-    >
-
-      <div class="section-heading reveal">
-
-        <span class="section-label">
-          PLANOS
-        </span>
-
-        <h2>
-          Escolha como
-          <br>
-          <em>acompanhar.</em>
-        </h2>
-
-        <p>
-          Valores abaixo são apenas uma demonstração visual.
-          O pagamento ainda não está implementado neste MVP.
-        </p>
-
-      </div>
-
-
-      <div class="pricing-grid">
-
-
-        <!-- FREE -->
-
-        <article class="price-card reveal">
-
-          <span class="plan-name">
-            GRÁTIS
-          </span>
-
-          <h3>
-            Comece agora
-          </h3>
-
-          <div class="price">
-            R$ 0
-            <small>/ sempre</small>
-          </div>
-
-          <p>
-            O essencial para começar a construir
-            uma rotina de acompanhamento.
-          </p>
-
-          <ul>
-
-            <li>
-              ✓ Hábitos básicos
-            </li>
-
-            <li>
-              ✓ Acompanhamento diário
-            </li>
-
-            <li>
-              ✓ Metas
-            </li>
-
-            <li>
-              ✓ Histórico de 7 dias
-            </li>
-
-          </ul>
-
-          <button class="btn btn-ghost full js-start">
-            Começar grátis
-          </button>
-
-        </article>
-
-
-        <!-- PREMIUM -->
-
-        <article class="price-card premium reveal">
-
-          <div class="popular">
-            EM BREVE
-          </div>
-
-          <span class="plan-name">
-            PREMIUM
-          </span>
-
-          <h3>
-            Mais contexto
-          </h3>
-
-          <div class="price">
-            R$ 19,90
-            <small>/ mês</small>
-          </div>
-
-          <p>
-            Mais histórico, personalização e relatórios
-            para acompanhar sua jornada.
-          </p>
-
-          <ul>
-
-            <li>
-              ✓ Tudo do plano grátis
-            </li>
-
-            <li>
-              ✓ Histórico completo
-            </li>
-
-            <li>
-              ✓ Gráficos avançados
-            </li>
-
-            <li>
-              ✓ Mais hábitos e personalização
-            </li>
-
-            <li>
-              ✓ Relatórios
-            </li>
-
-            <li>
-              ✓ Temas adicionais
-            </li>
-
-          </ul>
-
-          <button
-            class="btn btn-primary full"
-            data-demo-premium
-          >
-            Em breve
-          </button>
-
-        </article>
-
-      </div>
-
-    </section>
-
-
-    <!-- =========================
-         CTA
-    ========================== -->
-
-    <section class="cta-section">
-
-      <div class="cta-content reveal">
-
-        <span class="section-label">
-          FITTRACK
-        </span>
-
-        <h2>
-          Seu progresso começa
-          <br>
-          <em>com o próximo dia.</em>
-        </h2>
-
-        <p>
-          Não precisa ser perfeito.
-          Registre, observe e continue.
-        </p>
-
-        <button class="btn btn-primary btn-large js-start">
-          Abrir meu dashboard →
-        </button>
-
-      </div>
-
-    </section>
-
-  </main>
-
-
-  <!-- =========================
-       DASHBOARD APP
-  ========================== -->
-
-  <main
-    id="app"
-    class="app-shell hidden"
-  >
-
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-      <a
-        href="#"
-        class="brand app-brand"
-        data-view="overview"
-      >
-
-        <span class="brand-mark">
-          F
-        </span>
-
-        <span>
-          FIT<span>TRACK</span>
-        </span>
-
-      </a>
-
-
-      <nav class="side-nav">
-
-        <button
-          class="side-link active"
-          data-view="overview"
-        >
-          <span>⌂</span>
-          Visão geral
-        </button>
-
-        <button
-          class="side-link"
-          data-view="habits"
-        >
-          <span>✓</span>
-          Hábitos
-        </button>
-
-        <button
-          class="side-link"
-          data-view="goals"
-        >
-          <span>◎</span>
-          Metas
-        </button>
-
-        <button
-          class="side-link"
-          data-view="progress"
-        >
-          <span>▥</span>
-          Progresso
-        </button>
-
-        <button
-          class="side-link"
-          data-view="profile"
-        >
-          <span>◯</span>
-          Perfil
-        </button>
-
-      </nav>
-
-
-      <div class="sidebar-bottom">
-
-        <div class="sidebar-note">
-
-          <span>
-            ☀
-          </span>
-
-          <div>
-
-            <strong>
-              Um dia de cada vez.
-            </strong>
-
-            <small>
-              Consistência > perfeição.
-            </small>
-
-          </div>
-
-        </div>
-
-        <button
-          class="side-link back-site"
-          id="back-site"
-        >
-          <span>←</span>
-          Site
-        </button>
-
-      </div>
-
-    </aside>
-
-
-    <!-- MOBILE APP BAR -->
-
-    <div class="mobile-appbar">
-
-      <button
-        id="app-menu"
-        aria-label="Menu"
-      >
-        ☰
-      </button>
-
-      <strong>
-        FIT<span>TRACK</span>
-      </strong>
-
-      <button
-        class="mobile-avatar"
-        data-view="profile"
-      >
-        J
-      </button>
 
     </div>
 
 
-    <!-- APP CONTENT -->
+    <div class="hero-card">
 
-    <section class="app-content">
+        <div class="hero-card-top">
 
+            <div>
+                <small>Progresso de hoje</small>
+                <strong>78%</strong>
+            </div>
 
-      <!-- =========================
-           VISÃO GERAL
-      ========================== -->
-
-      <div
-        class="app-view active"
-        id="view-overview"
-      >
-
-        <div class="app-header">
-
-          <div>
-
-            <span
-              class="date-label"
-              id="current-date"
-            ></span>
-
-            <h1>
-              Boa noite,
-              <span id="user-greeting">
-                João
-              </span>
-              👋
-            </h1>
-
-            <p>
-              Veja como está seu dia.
-            </p>
-
-          </div>
-
-
-          <button
-            class="profile-chip"
-            data-view="profile"
-          >
-
-            <span id="profile-initial">
-              J
-            </span>
-
-            <span id="profile-chip-name">
-              João
-            </span>
-
-            <b>
-              ⌄
-            </b>
-
-          </button>
+            <span class="status-dot">●</span>
 
         </div>
 
 
-        <!-- MÉTRICAS -->
+        <div class="progress-bar">
+            <span style="width:78%"></span>
+        </div>
 
-        <div class="daily-grid">
+
+        <div class="mini-stats">
+
+            <div>
+                <b>1.6L</b>
+                <small>Água</small>
+            </div>
+
+            <div>
+                <b>32 min</b>
+                <small>Atividade</small>
+            </div>
+
+            <div>
+                <b>7h 24</b>
+                <small>Sono</small>
+            </div>
+
+        </div>
 
 
-          <!-- ÁGUA -->
+        <div class="week">
 
-          <article class="metric-card water-card">
+            <span>
+                <i style="height:42%"></i>
+                <small>Seg</small>
+            </span>
 
-            <div class="metric-top">
+            <span>
+                <i style="height:62%"></i>
+                <small>Ter</small>
+            </span>
 
-              <div>
+            <span>
+                <i style="height:54%"></i>
+                <small>Qua</small>
+            </span>
 
-                <span class="metric-label">
-                  Água
-                </span>
+            <span>
+                <i style="height:74%"></i>
+                <small>Qui</small>
+            </span>
 
-                <strong>
-                  <span id="water-value">
-                    1.5
-                  </span>
-                  <small>L</small>
-                </strong>
+            <span>
+                <i style="height:88%"></i>
+                <small>Sex</small>
+            </span>
 
-              </div>
+            <span>
+                <i style="height:68%"></i>
+                <small>Sáb</small>
+            </span>
 
-              <span class="metric-icon">
-                💧
-              </span>
+            <span>
+                <i style="height:94%"></i>
+                <small>Dom</small>
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RECURSOS
+===================================================== -->
+
+<section class="section" id="recursos">
+
+    <div class="section-heading">
+
+        <span class="eyebrow">
+            RECURSOS
+        </span>
+
+        <h2>
+            Tudo que você precisa para acompanhar sua rotina.
+        </h2>
+
+        <p>
+            Uma experiência direta, sem complicação
+            e com foco no seu progresso.
+        </p>
+
+    </div>
+
+
+    <div class="feature-grid">
+
+        <article class="feature-card">
+            <div class="feature-icon">💧</div>
+            <h3>Água</h3>
+            <p>
+                Registre sua hidratação e acompanhe sua meta diária.
+            </p>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon">🏃</div>
+            <h3>Atividade</h3>
+            <p>
+                Registre caminhadas e outras atividades do seu dia.
+            </p>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon">◷</div>
+            <h3>Sono</h3>
+            <p>
+                Acompanhe suas horas de sono e veja sua consistência.
+            </p>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon">✓</div>
+            <h3>Hábitos</h3>
+            <p>
+                Crie hábitos personalizados e marque cada conclusão.
+            </p>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon">↗</div>
+            <h3>Progresso</h3>
+            <p>
+                Visualize sua evolução dos últimos dias.
+            </p>
+        </article>
+
+
+        <article class="feature-card">
+            <div class="feature-icon">🔥</div>
+            <h3>Sequência</h3>
+            <p>
+                Veja sua sequência atual de hábitos concluídos.
+            </p>
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     COMO FUNCIONA
+===================================================== -->
+
+<section class="section split-section" id="como-funciona">
+
+    <div>
+
+        <span class="eyebrow">
+            COMO FUNCIONA
+        </span>
+
+        <h2>
+            Comece pequeno. Mantenha constância.
+        </h2>
+
+        <p class="large-copy">
+            O FITTRACK foi pensado para transformar
+            acompanhamento em rotina.
+            Você registra, visualiza e ajusta seus hábitos
+            sem depender de planilhas.
+        </p>
+
+    </div>
+
+
+    <div class="steps">
+
+        <div class="step">
+
+            <b>01</b>
+
+            <div>
+                <h3>Defina seus hábitos</h3>
+                <p>
+                    Escolha o que você quer acompanhar.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="step">
+
+            <b>02</b>
+
+            <div>
+                <h3>Registre seu dia</h3>
+                <p>
+                    Atualize água, atividade, sono e hábitos.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="step">
+
+            <b>03</b>
+
+            <div>
+                <h3>Observe sua evolução</h3>
+                <p>
+                    Use o painel para enxergar sua consistência.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     AJUDA
+===================================================== -->
+
+<section class="section help-section" id="ajuda">
+
+    <div class="section-heading">
+
+        <span class="eyebrow">
+            CENTRAL DE AJUDA
+        </span>
+
+        <h2>
+            Precisa de uma orientação?
+        </h2>
+
+        <p>
+            Encontre respostas rápidas para começar
+            a usar o FITTRACK.
+        </p>
+
+    </div>
+
+
+    <div class="faq-grid">
+
+        <details>
+
+            <summary>
+                Como começo?
+            </summary>
+
+            <p>
+                Clique em “Começar agora”, entre no painel
+                e configure seu perfil e hábitos.
+            </p>
+
+        </details>
+
+
+        <details>
+
+            <summary>
+                Meus dados ficam salvos?
+            </summary>
+
+            <p>
+                No MVP atual, os dados são salvos localmente
+                no navegador usando localStorage.
+            </p>
+
+        </details>
+
+
+        <details>
+
+            <summary>
+                Posso criar meus próprios hábitos?
+            </summary>
+
+            <p>
+                Sim. No painel, abra “Hábitos”
+                e use “Novo hábito”.
+            </p>
+
+        </details>
+
+
+        <details>
+
+            <summary>
+                O FITTRACK substitui um profissional de saúde?
+            </summary>
+
+            <p>
+                Não. O FITTRACK é uma ferramenta de
+                acompanhamento pessoal e não oferece
+                diagnóstico ou prescrição médica.
+            </p>
+
+        </details>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     PREÇOS
+===================================================== -->
+
+<section class="section pricing" id="precos">
+
+    <div class="section-heading">
+
+        <span class="eyebrow">
+            PLANOS
+        </span>
+
+        <h2>
+            Comece gratuitamente.
+        </h2>
+
+        <p>
+            Os valores abaixo são demonstrativos neste MVP.
+        </p>
+
+    </div>
+
+
+    <div class="price-grid">
+
+        <article class="price-card">
+
+            <span>FREE</span>
+
+            <strong>R$ 0</strong>
+
+            <small>para começar</small>
+
+            <ul>
+                <li>Hábitos</li>
+                <li>Água</li>
+                <li>Atividade</li>
+                <li>Progresso básico</li>
+            </ul>
+
+            <button
+                class="btn btn-ghost"
+                data-open-app
+            >
+                Começar
+            </button>
+
+        </article>
+
+
+        <article class="price-card featured">
+
+            <span>PREMIUM</span>
+
+            <strong>R$ 19,90</strong>
+
+            <small>por mês</small>
+
+            <ul>
+                <li>Todos os recursos</li>
+                <li>Relatórios avançados</li>
+                <li>Mais personalização</li>
+                <li>Recursos futuros</li>
+            </ul>
+
+            <button
+                class="btn btn-primary"
+                data-open-app
+            >
+                Conhecer
+            </button>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CTA
+===================================================== -->
+
+<section class="cta section">
+
+    <!-- LOGO INLINE NOVAMENTE -->
+    <svg
+        class="cta-logo"
+        viewBox="0 0 700 190"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+
+        <defs>
+
+            <linearGradient
+                id="ctaGradient"
+                x1="0"
+                y1="0"
+                x2="1"
+                y2="1"
+            >
+
+                <stop offset="0%" stop-color="#55e9c2"/>
+                <stop offset="100%" stop-color="#12b88d"/>
+
+            </linearGradient>
+
+        </defs>
+
+
+        <g transform="translate(35 32)">
+
+            <path
+                fill="#fff"
+                d="M0 0h106v25H31v29h62v25H31v47H0z"
+            />
+
+            <path
+                fill="url(#ctaGradient)"
+                d="M58 25h48v25H58z"
+            />
+
+            <path
+                fill="url(#ctaGradient)"
+                d="M31 79h62v25H31z"
+            />
+
+        </g>
+
+
+        <text
+            x="180"
+            y="105"
+            fill="#fff"
+            font-family="Arial"
+            font-size="67"
+            font-weight="800"
+        >
+            FIT<tspan fill="#20d6a3">TRACK</tspan>
+        </text>
+
+    </svg>
+
+
+    <h2>
+        Seu progresso. Seus hábitos. Sua evolução.
+    </h2>
+
+    <button
+        class="btn btn-primary"
+        data-open-app
+    >
+        Abrir meu FITTRACK
+    </button>
+
+</section>
+
+
+<!-- =====================================================
+     APP / DASHBOARD
+===================================================== -->
+
+<section class="app-shell section" id="app">
+
+    <div class="app-layout">
+
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+
+                <!-- LOGO INLINE -->
+                <svg
+                    class="sidebar-logo"
+                    viewBox="0 0 700 190"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+
+                    <rect
+                        width="700"
+                        height="190"
+                        rx="30"
+                        fill="#071018"
+                    />
+
+                    <g transform="translate(35 32)">
+
+                        <path
+                            fill="#fff"
+                            d="M0 0h106v25H31v29h62v25H31v47H0z"
+                        />
+
+                        <path
+                            fill="#20d6a3"
+                            d="M58 25h48v25H58z"
+                        />
+
+                        <path
+                            fill="#20d6a3"
+                            d="M31 79h62v25H31z"
+                        />
+
+                    </g>
+
+
+                    <text
+                        x="180"
+                        y="105"
+                        fill="#fff"
+                        font-family="Arial"
+                        font-size="67"
+                        font-weight="800"
+                    >
+                        FIT<tspan fill="#20d6a3">TRACK</tspan>
+                    </text>
+
+                </svg>
 
             </div>
 
 
-            <div class="progress-track">
-              <i id="water-bar"></i>
+            <button
+                class="side-link active"
+                data-screen="overview"
+            >
+                ◉
+                <span>Visão geral</span>
+            </button>
+
+
+            <button
+                class="side-link"
+                data-screen="habits"
+            >
+                ✓
+                <span>Hábitos</span>
+            </button>
+
+
+            <button
+                class="side-link"
+                data-screen="goals"
+            >
+                ◎
+                <span>Metas</span>
+            </button>
+
+
+            <button
+                class="side-link"
+                data-screen="progress"
+            >
+                ↗
+                <span>Progresso</span>
+            </button>
+
+
+            <button
+                class="side-link"
+                data-screen="help"
+            >
+                ?
+                <span>Ajuda</span>
+            </button>
+
+
+            <button
+                class="side-link"
+                data-screen="profile"
+            >
+                ◯
+                <span>Perfil</span>
+            </button>
+
+
+            <div class="sidebar-bottom">
+
+                <button
+                    id="resetData"
+                    class="text-btn"
+                >
+                    Resetar dados
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- DASHBOARD -->
+
+        <div class="dashboard">
+
+            <div class="dashboard-top">
+
+                <div>
+
+                    <span class="eyebrow">
+                        PAINEL
+                    </span>
+
+                    <h2 id="screenTitle">
+                        Visão geral
+                    </h2>
+
+                </div>
+
+
+                <div
+                    class="today"
+                    id="todayLabel"
+                ></div>
+
             </div>
 
 
-            <div class="metric-bottom">
+            <!-- OVERVIEW -->
 
-              <span id="water-percent">
-                75% da meta
-              </span>
+            <section
+                class="screen active"
+                id="screen-overview"
+            >
 
-              <button id="add-water">
-                + 250ml
-              </button>
+                <div class="welcome-card">
 
-            </div>
+                    <div>
 
-          </article>
+                        <span>
+                            Olá,
+                            <b id="userName">Você</b>
+                            👋
+                        </span>
 
+                        <h3>
+                            Vamos cuidar da sua constância hoje.
+                        </h3>
 
-          <!-- ATIVIDADE -->
-
-          <article class="metric-card">
-
-            <div class="metric-top">
-
-              <div>
-
-                <span class="metric-label">
-                  Atividade
-                </span>
-
-                <strong>
-                  <span id="activity-value">
-                    35
-                  </span>
-                  <small> min</small>
-                </strong>
-
-              </div>
-
-              <span class="metric-icon">
-                ◷
-              </span>
-
-            </div>
+                    </div>
 
 
-            <div class="progress-track">
-              <i id="activity-bar"></i>
-            </div>
+                    <div class="daily-score">
+
+                        <b id="dailyPercent">
+                            0%
+                        </b>
+
+                        <small>
+                            do dia
+                        </small>
+
+                    </div>
+
+                </div>
 
 
-            <div class="metric-bottom">
+                <div class="metric-grid">
 
-              <span id="activity-percent">
-                70% da meta
-              </span>
 
-              <button id="add-activity">
-                + 5 min
-              </butt
+                    <div class="metric-card">
+
+                        <span>💧 Água</span>
+
+                        <strong>
+                            <b id="waterValue">0</b>L
+                        </strong>
+
+                        <div class="progress-bar">
+                            <span id="waterBar"></span>
+                        </div>
+
+                        <button
+                            class="mini-btn"
+                            data-action="water"
+                        >
+                            + 250 ml
+                        </button>
+
+                    </div>
+
+
+                    <div class="metric-card">
+
+                        <span>🏃 Atividade</span>
+
+                        <strong>
+                            <b id="activityValue">0</b>
+                            min
+                        </strong>
+
+                        <div class="progress-bar">
+                            <span id="activityBar"></span>
+                        </div>
+
+                        <button
+                            class="mini-btn"
+                            data-action="activity"
+                        >
+                            + 10 min
+                        </button>
+
+                    </div>
+
+
+                    <div class="metric-card">
+
+                        <span>◷ Sono</span>
+
+                        <strong>
+                            <b id="sleepValue">0</b>
+                            h
+                        </strong>
+
+                        <div class="progress-bar">
+                            <span id="sleepBar"></span>
+                        </div>
+
+                        <button
+                            class="mini-btn"
+                            data-a
