@@ -1,1215 +1,1177 @@
-const STORAGE_KEY = "fittrack_mvp_v4";
+/* =========================================================
+   FITTRACK
+   SCRIPT.JS
+========================================================= */
+
+/*
+    URL DO BACKEND
+
+    Durante desenvolvimento:
+    http://localhost:3000/api
+
+    Quando colocar seu backend online, troque para:
+    https://SEU-BACKEND.com/api
+*/
+
+const API = window.FITTRACK_API || "http://localhost:3000/api";
 
 
-const defaultState = {
+/* =========================================================
+   ESTADO
+========================================================= */
 
-    date:
-        new Date()
-            .toISOString()
-            .slice(0, 10),
+let authMode = "register";
 
+let currentUser = null;
+
+let habits = [];
+
+let goals = [];
+
+let localMetrics = {
     water: 0,
-
     activity: 0,
-
-    sleep: 0,
-
-    habits: [
-
-        {
-            id: 1,
-            name: "Beber água",
-            frequency: "Diário",
-            done: false
-        },
-
-        {
-            id: 2,
-            name: "Caminhar",
-            frequency: "Diário",
-            done: false
-        },
-
-        {
-            id: 3,
-            name: "Dormir no horário",
-            frequency: "Diário",
-            done: false
-        }
-
-    ],
-
-    goals: {
-
-        water: 2,
-
-        activity: 30,
-
-        sleep: 8,
-
-        habits: 3
-
-    },
-
-    profile: {
-
-        name: "Você",
-
-        goal:
-            "Criar uma rotina mais consistente",
-
-        age: "",
-
-        height: "",
-
-        weight: ""
-
-    },
-
-    history: [
-
-        60,
-        75,
-        80,
-        65,
-        90,
-        85,
-        95
-
-    ]
-
+    sleep: 0
 };
 
 
-let state = loadState();
+/* =========================================================
+   ELEMENTOS
+========================================================= */
 
+const $ = (selector) => document.querySelector(selector);
 
-/* =========================================
-   STORAGE
-========================================= */
+const $$ = (selector) => document.querySelectorAll(selector);
 
-function loadState() {
 
-    try {
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
 
-        const saved =
-            JSON.parse(
-                localStorage.getItem(STORAGE_KEY)
-            );
+document.addEventListener("DOMContentLoaded", async () => {
 
+    loadLocalData();
 
-        if (saved) {
+    setupAuthMode();
 
-            const today =
-                new Date()
-                    .toISOString()
-                    .slice(0, 10);
-
-
-            if (saved.date !== today) {
-
-                saved.date = today;
-
-                saved.water = 0;
-
-                saved.activity = 0;
-
-                saved.sleep = 0;
-
-                saved.habits =
-                    (saved.habits || [])
-                        .map(h => ({
-                            ...h,
-                            done: false
-                        }));
-
-            }
-
-
-            return {
-
-                ...structuredClone(defaultState),
-
-                ...saved
-
-            };
-
-        }
-
-    } catch (error) {
-
-        console.log(
-            "Não foi possível carregar os dados."
-        );
-
-    }
-
-
-    return structuredClone(defaultState);
-}
-
-
-function save() {
-
-    localStorage.setItem(
-
-        STORAGE_KEY,
-
-        JSON.stringify(state)
-
-    );
-
-    renderAll();
-}
-
-
-/* =========================================
-   HELPERS
-========================================= */
-
-const $ =
-    selector =>
-        document.querySelector(selector);
-
-
-const $$ =
-    selector =>
-        [...document.querySelectorAll(selector)];
-
-
-function percentage(value, goal) {
-
-    return Math.min(
-
-        100,
-
-        Math.round(
-
-            ((Number(value) || 0) /
-            (Number(goal) || 1)) *
-            100
-
-        )
-
-    );
-
-}
-
-
-function escapeHTML(value) {
-
-    return String(value)
-        .replace(
-            /[&<>"']/g,
-            character => ({
-
-                "&": "&amp;",
-                "<": "&lt;",
-                ">": "&gt;",
-                '"': "&quot;",
-                "'": "&#039;"
-
-            })[character]
-        );
-
-}
-
-
-/* =========================================
-   DAILY SCORE
-========================================= */
-
-function getDailyPercentage() {
-
-    const water =
-        percentage(
-            state.water,
-            state.goals.water
-        );
-
-
-    const activity =
-        percentage(
-            state.activity,
-            state.goals.activity
-        );
-
-
-    const sleep =
-        percentage(
-            state.sleep,
-            state.goals.sleep
-        );
-
-
-    const habits =
-        state.habits.length
-
-            ? Math.round(
-                (
-                    state.habits
-                        .filter(h => h.done)
-                        .length /
-                    state.habits.length
-                ) * 100
-            )
-
-            : 0;
-
-
-    return Math.round(
-
-        (
-            water +
-            activity +
-            sleep +
-            habits
-        ) / 4
-
-    );
-
-}
-
-
-/* =========================================
-   RENDER PRINCIPAL
-========================================= */
-
-function renderAll() {
-
-    renderDate();
-
-    renderOverview();
+    await restoreSession();
 
     renderHabits();
 
     renderGoals();
 
-    renderCharts();
+    updateMetricsUI();
 
-    renderProfile();
+});
+
+
+/* =========================================================
+   LOCAL DATA
+========================================================= */
+
+function loadLocalData() {
+
+    try {
+
+        const savedMetrics = localStorage.getItem(
+            "fittrack_local_metrics"
+        );
+
+        if (savedMetrics) {
+            localMetrics = {
+                ...localMetrics,
+                ...JSON.parse(savedMetrics)
+            };
+        }
+
+        const savedHabits = localStorage.getItem(
+            "fittrack_local_habits"
+        );
+
+        if (savedHabits) {
+            habits = JSON.parse(savedHabits);
+        }
+
+        const savedGoals = localStorage.getItem(
+            "fittrack_local_goals"
+        );
+
+        if (savedGoals) {
+            goals = JSON.parse(savedGoals);
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Erro ao carregar dados locais:",
+            error
+        );
+
+    }
 
 }
 
 
-/* =========================================
-   DATE
-========================================= */
+function saveLocalData() {
 
-function renderDate() {
+    localStorage.setItem(
+        "fittrack_local_metrics",
+        JSON.stringify(localMetrics)
+    );
 
-    const dateElement =
-        $("#todayLabel");
+    localStorage.setItem(
+        "fittrack_local_habits",
+        JSON.stringify(habits)
+    );
+
+    localStorage.setItem(
+        "fittrack_local_goals",
+        JSON.stringify(goals)
+    );
+
+}
 
 
-    if (!dateElement) return;
+/* =========================================================
+   API
+========================================================= */
 
+async function apiRequest(
+    endpoint,
+    options = {}
+) {
 
-    dateElement.textContent =
-        new Date().toLocaleDateString(
-            "pt-BR",
+    const token = localStorage.getItem(
+        "fittrack_token"
+    );
+
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+    };
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API}${endpoint}`,
             {
-                weekday: "long",
-                day: "2-digit",
-                month: "long"
+                ...options,
+                headers
             }
         );
 
-}
+        const contentType =
+            response.headers.get("content-type") || "";
 
+        const data = contentType.includes("application/json")
+            ? await response.json()
+            : await response.text();
 
-/* =========================================
-   OVERVIEW
-========================================= */
+        if (!response.ok) {
 
-function renderOverview() {
+            const message =
+                data?.message ||
+                data?.error ||
+                "Não foi possível completar a solicitação.";
 
-    const userName =
-        $("#userName");
-
-
-    if (userName) {
-
-        userName.textContent =
-            state.profile.name || "Você";
-
-    }
-
-
-    $("#dailyPercent").textContent =
-        getDailyPercentage() + "%";
-
-
-    $("#waterValue").textContent =
-        Number(state.water)
-            .toFixed(2)
-            .replace(".", ",");
-
-
-    $("#activityValue").textContent =
-        state.activity;
-
-
-    $("#sleepValue").textContent =
-        Number(state.sleep)
-            .toFixed(1)
-            .replace(".", ",");
-
-
-    $("#habitDone").textContent =
-        state.habits
-            .filter(h => h.done)
-            .length;
-
-
-    $("#habitTotal").textContent =
-        state.habits.length;
-
-
-    $("#waterBar").style.width =
-        percentage(
-            state.water,
-            state.goals.water
-        ) + "%";
-
-
-    $("#activityBar").style.width =
-        percentage(
-            state.activity,
-            state.goals.activity
-        ) + "%";
-
-
-    $("#sleepBar").style.width =
-        percentage(
-            state.sleep,
-            state.goals.sleep
-        ) + "%";
-
-
-    const habitPercentage =
-        state.habits.length
-
-            ? (
-                state.habits
-                    .filter(h => h.done)
-                    .length /
-                state.habits.length
-            ) * 100
-
-            : 0;
-
-
-    $("#habitBar").style.width =
-        habitPercentage + "%";
-
-}
-
-
-/* =========================================
-   GRÁFICOS
-========================================= */
-
-function renderCharts() {
-
-    renderChart(
-        "#miniChart",
-        state.history
-    );
-
-
-    renderChart(
-        "#bigChart",
-        state.history
-    );
-
-}
-
-
-function renderChart(
-    selector,
-    data
-) {
-
-    const element =
-        $(selector);
-
-
-    if (!element) return;
-
-
-    const labels = [
-
-        "Seg",
-        "Ter",
-        "Qua",
-        "Qui",
-        "Sex",
-        "Sáb",
-        "Dom"
-
-    ];
-
-
-    element.innerHTML =
-
-        data.map(
-
-            (value, index) => `
-
-                <span
-                    style="height:${Math.max(
-                        8,
-                        value
-                    )}%"
-                >
-
-                    <small>
-                        ${labels[index]}
-                    </small>
-
-                </span>
-
-            `
-
-        ).join("");
-
-}
-
-
-/* =========================================
-   GOALS
-========================================= */
-
-function renderGoals() {
-
-    const doneHabits =
-        state.habits
-            .filter(h => h.done)
-            .length;
-
-
-    const goals = [
-
-        {
-            icon: "💧",
-            name: "Água",
-            value:
-                `${Number(state.water)
-                    .toFixed(2)
-                    .replace(".", ",")} / ${state.goals.water} L`,
-            percentage:
-                percentage(
-                    state.water,
-                    state.goals.water
-                )
-        },
-
-        {
-            icon: "🏃",
-            name: "Atividade",
-            value:
-                `${state.activity} / ${state.goals.activity} min`,
-            percentage:
-                percentage(
-                    state.activity,
-                    state.goals.activity
-                )
-        },
-
-        {
-            icon: "◷",
-            name: "Sono",
-            value:
-                `${Number(state.sleep)
-                    .toFixed(1)
-                    .replace(".", ",")} / ${state.goals.sleep} h`,
-            percentage:
-                percentage(
-                    state.sleep,
-                    state.goals.sleep
-                )
-        },
-
-        {
-            icon: "✓",
-            name: "Hábitos",
-            value:
-                `${doneHabits} / ${state.goals.habits}`,
-            percentage:
-                Math.min(
-                    100,
-                    Math.round(
-                        doneHabits /
-                        state.goals.habits *
-                        100
-                    )
-                )
+            throw new Error(message);
         }
 
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            `API ${endpoint}:`,
+            error
+        );
+
+        throw error;
+    }
+}
+
+
+/* =========================================================
+   SESSION
+========================================================= */
+
+async function restoreSession() {
+
+    const token = localStorage.getItem(
+        "fittrack_token"
+    );
+
+    if (!token) {
+        return;
+    }
+
+    try {
+
+        const data = await apiRequest(
+            "/auth/me"
+        );
+
+        currentUser =
+            data.user ||
+            data;
+
+        if (
+            currentUser.role === "owner" ||
+            currentUser.role === "admin"
+        ) {
+
+            showPage("admin");
+
+            await loadAdminUsers();
+
+        } else {
+
+            showPage("dashboard");
+
+            await loadUserData();
+
+        }
+
+        updateLoggedHeader();
+
+    } catch (error) {
+
+        localStorage.removeItem(
+            "fittrack_token"
+        );
+
+        currentUser = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   PAGES
+========================================================= */
+
+function showPage(page) {
+
+    const pages = [
+        "home",
+        "auth",
+        "dashboard",
+        "checkout",
+        "admin"
     ];
 
+    pages.forEach((name) => {
 
-    const summary =
-        $("#goalSummary");
+        const element = $(`#${name}Page`);
+
+        if (element) {
+            element.classList.remove("active");
+        }
+
+    });
 
 
-    if (summary) {
+    const target =
+        $(`#${page}Page`);
 
-        summary.innerHTML =
-            goals.map(goal => `
-
-                <div class="goal-row">
-
-                    <span>
-                        ${goal.icon}
-                    </span>
-
-                    <div>
-
-                        <b>
-                            ${goal.name}
-                        </b>
-
-                        <small>
-                            ${goal.value}
-                        </small>
-
-                    </div>
-
-                    <strong>
-                        ${goal.percentage}%
-                    </strong>
-
-                </div>
-
-            `).join("");
-
+    if (target) {
+        target.classList.add("active");
     }
 
 
-    const list =
-        $("#goalList");
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 
 
-    if (list) {
+    if (page === "dashboard") {
+        updateDashboard();
+    }
 
-        const keys = [
+    if (page === "admin") {
+        loadAdminUsers();
+    }
 
-            "water",
-            "activity",
-            "sleep",
-            "habits"
-
-        ];
+}
 
 
-        list.innerHTML =
-            goals.map(
-                (goal, index) => `
+/* =========================================================
+   MOBILE MENU
+========================================================= */
 
-                    <div class="goal-item">
+function toggleMobileMenu() {
 
-                        <span>
-                            ${goal.icon}
-                        </span>
+    $("#mobileMenu")?.classList.toggle(
+        "open"
+    );
 
-                        <div>
+}
 
-                            <b>
-                                ${goal.name}
-                            </b>
 
-                            <small>
-                                Meta atual:
-                                ${goal.value.split(" / ")[1]}
-                            </small>
+function closeMobileMenu() {
 
-                        </div>
+    $("#mobileMenu")?.classList.remove(
+        "open"
+    );
 
-                        <strong class="goal-value">
-                            ${goal.percentage}%
-                        </strong>
+}
 
-                        <button
-                            class="mini-btn edit-goal"
-                            data-goal="${keys[index]}"
-                        >
-                            Editar
-                        </button>
 
-                    </div>
+/* =========================================================
+   AUTH
+========================================================= */
 
-                `
-            ).join("");
+function openAuth(mode = "register") {
+
+    authMode = mode;
+
+    setupAuthMode();
+
+    showPage("auth");
+
+}
+
+
+function setupAuthMode() {
+
+    const nameField =
+        $("#nameField");
+
+    const title =
+        $("#authTitle");
+
+    const subtitle =
+        $("#authSubtitle");
+
+    const submit =
+        $("#authSubmit");
+
+    const switchText =
+        $("#authSwitchText");
+
+    const switchButton =
+        $("#authSwitchButton");
+
+    const nameInput =
+        $("#authName");
+
+
+    if (authMode === "login") {
+
+        if (nameField) {
+            nameField.style.display = "none";
+        }
+
+        if (nameInput) {
+            nameInput.required = false;
+        }
+
+        if (title) {
+            title.textContent =
+                "Bem-vindo de volta";
+        }
+
+        if (subtitle) {
+            subtitle.textContent =
+                "Entre na sua conta FITTRACK.";
+        }
+
+        if (submit) {
+            submit.textContent =
+                "Entrar";
+        }
+
+        if (switchText) {
+            switchText.textContent =
+                "Ainda não possui uma conta?";
+        }
+
+        if (switchButton) {
+            switchButton.textContent =
+                "Criar conta";
+        }
+
+    } else {
+
+        if (nameField) {
+            nameField.style.display = "grid";
+        }
+
+        if (nameInput) {
+            nameInput.required = true;
+        }
+
+        if (title) {
+            title.textContent =
+                "Criar sua conta";
+        }
+
+        if (subtitle) {
+            subtitle.textContent =
+                "Comece sua jornada gratuitamente.";
+        }
+
+        if (submit) {
+            submit.textContent =
+                "Criar conta";
+        }
+
+        if (switchText) {
+            switchText.textContent =
+                "Já possui uma conta?";
+        }
+
+        if (switchButton) {
+            switchButton.textContent =
+                "Entrar";
+        }
 
     }
 
 }
 
 
-/* =========================================
-   HABITS
-========================================= */
+function toggleAuthMode() {
 
-function renderHabits() {
+    authMode =
+        authMode === "login"
+            ? "register"
+            : "login";
 
-    const list =
-        $("#habitList");
+    setupAuthMode();
+
+}
 
 
-    if (!list) return;
+async function handleAuth(event) {
+
+    event.preventDefault();
+
+    const errorElement =
+        $("#authError");
+
+    errorElement.textContent = "";
 
 
-    if (!state.habits.length) {
+    const name =
+        $("#authName")?.value.trim();
 
-        list.innerHTML = `
+    const email =
+        $("#authEmail")?.value.trim();
 
-            <div class="panel">
+    const password =
+        $("#authPassword")?.value;
 
-                <p>
-                    Nenhum hábito criado ainda.
-                </p>
 
-            </div>
+    if (!email || !password) {
 
-        `;
+        errorElement.textContent =
+            "Preencha e-mail e senha.";
 
         return;
+    }
+
+
+    if (
+        authMode === "register" &&
+        !name
+    ) {
+
+        errorElement.textContent =
+            "Informe seu nome.";
+
+        return;
+    }
+
+
+    const submit =
+        $("#authSubmit");
+
+    const originalText =
+        submit.textContent;
+
+    submit.disabled = true;
+    submit.textContent =
+        "Aguarde...";
+
+
+    try {
+
+        let data;
+
+
+        if (authMode === "register") {
+
+            data = await apiRequest(
+                "/auth/register",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        password
+                    })
+                }
+            );
+
+        } else {
+
+            data = await apiRequest(
+                "/auth/login",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                }
+            );
+
+        }
+
+
+        const token =
+            data.token ||
+            data.accessToken;
+
+        if (!token) {
+            throw new Error(
+                "O servidor não retornou o token de acesso."
+            );
+        }
+
+
+        localStorage.setItem(
+            "fittrack_token",
+            token
+        );
+
+
+        currentUser =
+            data.user ||
+            data;
+
+
+        $("#authForm").reset();
+
+        showToast(
+            authMode === "register"
+                ? "Conta criada com sucesso!"
+                : "Login realizado!"
+        );
+
+
+        if (
+            currentUser.role === "owner" ||
+            currentUser.role === "admin"
+        ) {
+
+            showPage("admin");
+
+            await loadAdminUsers();
+
+        } else {
+
+            showPage("dashboard");
+
+            await loadUserData();
+
+        }
+
+
+        updateLoggedHeader();
+
+
+    } catch (error) {
+
+        errorElement.textContent =
+            error.message ||
+            "Não foi possível entrar.";
+
+    } finally {
+
+        submit.disabled = false;
+
+        submit.textContent =
+            originalText;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout() {
+
+    localStorage.removeItem(
+        "fittrack_token"
+    );
+
+    currentUser = null;
+
+    habits = [];
+
+    showPage("home");
+
+    updateLoggedHeader();
+
+    showToast(
+        "Você saiu da sua conta."
+    );
+
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+function updateLoggedHeader() {
+
+    const loginButton =
+        $("#loginHeaderButton");
+
+    if (!loginButton) {
+        return;
+    }
+
+    if (currentUser) {
+
+        loginButton.textContent =
+            "Dashboard";
+
+        loginButton.onclick = () => {
+
+            if (
+                currentUser.role === "owner" ||
+                currentUser.role === "admin"
+            ) {
+                showPage("admin");
+            } else {
+                showPage("dashboard");
+            }
+
+        };
+
+    } else {
+
+        loginButton.textContent =
+            "Entrar";
+
+        loginButton.onclick =
+            () => openAuth("login");
+
+    }
+
+}
+
+
+/* =========================================================
+   USER DATA
+========================================================= */
+
+async function loadUserData() {
+
+    try {
+
+        const me =
+            await apiRequest(
+                "/auth/me"
+            );
+
+        currentUser =
+            me.user ||
+            me;
+
+
+        try {
+
+            const habitsData =
+                await apiRequest(
+                    "/me/habits"
+                );
+
+            if (Array.isArray(habitsData)) {
+                habits = habitsData;
+            } else if (
+                Array.isArray(habitsData.habits)
+            ) {
+                habits = habitsData.habits;
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Não foi possível carregar hábitos da API."
+            );
+
+        }
+
+
+        try {
+
+            const metricsData =
+                await apiRequest(
+                    "/me/metrics"
+                );
+
+            const metrics =
+                metricsData.metrics ||
+                metricsData;
+
+            if (metrics) {
+
+                localMetrics = {
+                    ...localMetrics,
+                    ...metrics
+                };
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Não foi possível carregar métricas da API."
+            );
+
+        }
+
+
+        renderHabits();
+
+        updateMetricsUI();
+
+        updateDashboard();
+
+        saveLocalData();
+
+    } catch (error) {
+
+        console.warn(
+            "Modo local:",
+            error.message
+        );
+
+        updateDashboard();
+
+    }
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function updateDashboard() {
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    const name =
+        currentUser.name ||
+        currentUser.username ||
+        "você";
+
+
+    const dashboardName =
+        $("#dashboardUserName");
+
+    if (dashboardName) {
+        dashboardName.textContent =
+            name.split(" ")[0];
+    }
+
+
+    const premium =
+        isPremium();
+
+
+    const planBadge =
+        $("#dashboardPlanBadge");
+
+    if (planBadge) {
+
+        planBadge.textContent =
+            premium
+                ? "PREMIUM"
+                : "FREE";
+
+        planBadge.classList.toggle(
+            "premium",
+            premium
+        );
 
     }
 
 
-    list.innerHTML =
+    const sidebarPlan =
+        $("#sidebarPlan");
 
-        state.habits.map(
-            habit => `
+    if (sidebarPlan) {
 
-                <div class="habit-item">
+        sidebarPlan.querySelector(
+            "strong"
+        ).textContent =
+            premium
+                ? "PREMIUM"
+                : "FREE";
 
-                    <button
-                        class="check ${
-                            habit.done
-                                ? "done"
-                                : ""
-                        }"
-                        data-toggle="${habit.id}"
-                    >
-                        ${
-                            habit.done
-                                ? "✓"
-                                : ""
-                        }
-                    </button>
+    }
 
 
-                    <div class="habit-main">
+    const profilePlan =
+        $("#profilePlan");
 
-                        <b>
-                            ${escapeHTML(
-                                habit.name
-                            )}
-                        </b>
+    if (profilePlan) {
 
-                        <small>
-                            ${escapeHTML(
-                                habit.frequency
-                            )}
-                        </small>
+        profilePlan.textContent =
+            premium
+                ? "PREMIUM"
+                : "FREE";
 
-                    </div>
+    }
 
 
-                    <div class="habit-actions">
+    const description =
+        $("#profilePlanDescription");
 
-                        <button
-                            class="mini-btn danger"
-                            data-delete="${habit.id}"
-                        >
-                            Excluir
-                        </button>
+    if (description) {
 
-                    </div>
+        description.textContent =
+            premium
+                ? "Seu acesso Premium está ativo."
+                : "Você está utilizando o plano gratuito.";
 
-                </div>
-
-            `
-        ).join("");
-
-}
+    }
 
 
-/* =========================================
-   PROFILE
-========================================= */
+    const premiumButton =
+        $("#profilePremiumButton");
 
-function renderProfile() {
+    if (premiumButton) {
 
-    $("#profileName").value =
-        state.profile.name || "";
+        premiumButton.style.display =
+            premium
+                ? "none"
+                : "flex";
 
-
-    $("#profileGoal").value =
-        state.profile.goal || "";
-
-
-    $("#profileAge").value =
-        state.profile.age || "";
+    }
 
 
-    $("#profileHeight").value =
-        state.profile.height || "";
+    const premiumCard =
+        $("#premiumDashboardCard");
+
+    if (premiumCard) {
+
+        premiumCard.style.display =
+            premium
+                ? "none"
+                : "flex";
+
+    }
 
 
-    $("#profileWeight").value =
-        state.profile.weight || "";
+    fillProfile();
+
+    renderGoals();
 
 }
 
 
-/* =========================================
-   NAVEGAÇÃO
-========================================= */
+/* =========================================================
+   PLAN
+========================================================= */
 
-function openScreen(screen) {
+function isPremium() {
 
-    $$(".side-link")
-        .forEach(button => {
+    if (!currentUser) {
+        return false;
+    }
+
+
+    if (
+        currentUser.plan === "premium" ||
+        currentUser.plan === "PREMIUM"
+    ) {
+        return true;
+    }
+
+
+    if (
+        currentUser.premiumUntil ||
+        currentUser.premium_until
+    ) {
+
+        const date =
+            new Date(
+                currentUser.premiumUntil ||
+                currentUser.premium_until
+            );
+
+        return date > new Date();
+
+    }
+
+
+    return false;
+
+}
+
+
+/* =========================================================
+   DASHBOARD SECTIONS
+========================================================= */
+
+function switchDashboardSection(section) {
+
+    $$(".dashboard-section")
+        .forEach((element) => {
+
+            element.classList.remove(
+                "active"
+            );
+
+        });
+
+
+    const target =
+        $(`#section-${section}`);
+
+    if (target) {
+        target.classList.add(
+            "active"
+        );
+    }
+
+
+    $$(".dashboard-nav-item")
+        .forEach((button) => {
 
             button.classList.toggle(
                 "active",
-                button.dataset.screen === screen
+                button.dataset.section === section
             );
 
         });
 
 
-    $$(".screen")
-        .forEach(section => {
-
-            section.classList.toggle(
-
-                "active",
-
-                section.id ===
-                `screen-${screen}`
-
-            );
-
-        });
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
 
 
-    const titles = {
+    if (section === "habits") {
+        renderHabits();
+    }
 
-        overview: "Visão geral",
+    if (section === "progress") {
+        updateMetricsUI();
+    }
 
-        habits: "Hábitos",
-
-        goals: "Metas",
-
-        progress: "Progresso",
-
-        help: "Ajuda",
-
-        profile: "Perfil"
-
-    };
-
-
-    $("#screenTitle").textContent =
-        titles[screen] || "FITTRACK";
-
-
-    document
-        .querySelector(".app-shell")
-        ?.scrollIntoView({
-
-            behavior: "smooth",
-
-            block: "start"
-
-        });
+    if (section === "profile") {
+        fillProfile();
+    }
 
 }
 
 
-/* =========================================
-   MODAIS
-========================================= */
+function toggleSidebar() {
 
-function openModal(id) {
-
-    const modal = $(id);
-
-
-    if (!modal) return;
-
-
-    modal.classList.add("open");
-
-    modal.setAttribute(
-        "aria-hidden",
-        "false"
+    $(".sidebar")?.classList.toggle(
+        "open"
     );
 
 }
 
 
-function closeModals() {
+/* =========================================================
+   METRICS
+========================================================= */
 
-    $$(".modal")
-        .forEach(modal => {
+function updateMetricsUI() {
 
-            modal.classList.remove("open");
+    const water =
+        Number(localMetrics.water || 0);
 
-            modal.setAttribute(
-                "aria-hidden",
-                "true"
-            );
+    const activity =
+        Number(localMetrics.activity || 0);
 
-        });
+    const sleep =
+        Number(localMetrics.sleep || 0);
+
+
+    const waterElement =
+        $("#waterValue");
+
+    if (waterElement) {
+
+        waterElement.textContent =
+            `${water.toLocaleString("pt-BR")} ml`;
+
+    }
+
+
+    const waterProgress =
+        $("#waterProgress");
+
+    if (waterProgress) {
+
+        waterProgress.style.width =
+            `${Math.min((water / 2000) * 100, 100)}%`;
+
+    }
+
+
+    const activityElement =
+        $("#activityValue");
+
+    if (activityElement) {
+
+        activityElement.textContent =
+            activity.toLocaleString("pt-BR");
+
+    }
+
+
+    const activityProgress =
+        $("#activityProgress");
+
+    if (activityProgress) {
+
+        activityProgress.style.width =
+            `${Math.min((activity / 10000) * 100, 100)}%`;
+
+    }
+
+
+    const sleepElement =
+        $("#sleepValue");
+
+    if (sleepElement) {
+
+        sleepElement.textContent =
+            `${sleep}h`;
+
+    }
+
+
+    const sleepProgress =
+        $("#sleepProgress");
+
+    if (sleepProgress) {
+
+        sleepProgress.style.width =
+            `${Math.min((sleep / 8) * 100, 100)}%`;
+
+    }
+
+
+    const historyWater =
+        $("#historyWater");
+
+    if (historyWater) {
+        historyWater.textContent =
+            `${water.toLocaleString("pt-BR")} ml`;
+    }
+
+
+    const historyActivity =
+        $("#historyActivity");
+
+    if (historyActivity) {
+        historyActivity.textContent =
+            activity.toLocaleString("pt-BR");
+    }
+
+
+    const historySleep =
+        $("#historySleep");
+
+    if (historySleep) {
+        historySleep.textContent =
+            `${sleep}h`;
+    }
+
+
+    const completed =
+        habits.filter(
+            habit => habit.completed
+        ).length;
+
+
+    const historyHabits =
+        $("#historyHabits");
+
+    if (historyHabits) {
+        historyHabits.textContent =
+            completed;
+    }
+
+
+    const total =
+        habits.length;
+
+    const percentage =
+        total
+            ? Math.round(
+                (completed / total) * 100
+            )
+            : 0;
+
+
+    const progressPercentage =
+        $("#progressPercentage");
+
+    if (progressPercentage) {
+
+        progressPercentage.textContent =
+            `${percentage}%`;
+
+    }
+
+
+    const streak =
+        $("#streakValue");
+
+    if (streak) {
+
+        streak.textContent =
+            `${calculateStreak()} dias`;
+
+    }
 
 }
 
 
-/* =========================================
-   CLIQUES
-========================================= */
+/* =========================================================
+   WATER
+========================================================= */
 
-document.addEventListener(
-    "click",
-    event => {
+async function addWater(amount) {
 
-        const screenButton =
-            event.target.closest(
-                "[data-screen]"
-            );
+    localMetrics.water =
+        Number(localMetrics.water || 0) +
+        amount;
 
 
-        if (screenButton) {
+    saveLocalData();
 
-            openScreen(
-                screenButton.dataset.screen
-            );
+    updateMetricsUI();
 
-        }
 
+    try {
 
-        const targetButton =
-            event.target.closest(
-                "[data-screen-target]"
-            );
-
-
-        if (targetButton) {
-
-            openScreen(
-                targetButton.dataset.screenTarget
-            );
-
-        }
-
-
-        const openApp =
-            event.target.closest(
-                "[data-open-app]"
-            );
-
-
-        if (openApp) {
-
-            openScreen("overview");
-
-        }
-
-
-        const action =
-            event.target.closest(
-                "[data-action]"
-            )?.dataset.action;
-
-
-        /* Água */
-
-        if (action === "water") {
-
-            state.water =
-                Math.min(
-                    10,
-                    state.water + 0.25
-                );
-
-            save();
-
-        }
-
-
-        /* Atividade */
-
-        if (action === "activity") {
-
-            state.activity =
-                Math.min(
-                    300,
-                    state.activity + 10
-                );
-
-            save();
-
-        }
-
-
-        /* Sono */
-
-        if (action === "sleep") {
-
-            openModal(
-                "#sleepModal"
-            );
-
-        }
-
-
-        /* Novo hábito */
-
-        if (
-            event.target.closest(
-                "#newHabit"
-            )
-        ) {
-
-            openModal(
-                "#habitModal"
-            );
-
-        }
-
-
-        /* Fechar */
-
-        if (
-            event.target.closest(
-                "[data-close-modal]"
-            )
-        ) {
-
-            closeModals();
-
-        }
-
-
-        /* Toggle hábito */
-
-        const toggle =
-            event.target.closest(
-                "[data-toggle]"
-            );
-
-
-        if (toggle) {
-
-            const habit =
-                state.habits.find(
-                    item =>
-                        item.id ==
-                        toggle.dataset.toggle
-                );
-
-
-            if (habit) {
-
-                habit.done =
-                    !habit.done;
-
-                save();
-
-            }
-
-        }
-
-
-        /* Excluir hábito */
-
-        const deleteButton =
-            event.target.closest(
-                "[data-delete]"
-            );
-
-
-        if (deleteButton) {
-
-            state.habits =
-                state.habits.filter(
-                    item =>
-                        item.id !=
-                        deleteButton.dataset.delete
-                );
-
-            save();
-
-        }
-
-
-        /* Editar meta */
-
-        const editGoal =
-            event.target.closest(
-                ".edit-goal"
-            );
-
-
-        if (editGoal) {
-
-            const key =
-                editGoal.dataset.goal;
-
-
-            const labels = {
-
-                water:
-                    "Litros de água",
-
-                activity:
-                    "Minutos de atividade",
-
-                sleep:
-                    "Horas de sono",
-
-                habits:
-                    "Hábitos por dia"
-
-            };
-
-
-            const value =
-                prompt(
-
-                    `Nova meta — ${labels[key]}`,
-
-                    state.goals[key]
-
-                );
-
-
-            if (
-                value !== null &&
-                !isNaN(value) &&
-                Number(value) > 0
-            ) {
-
-                state.goals[key] =
-                    Number(value);
-
-                save();
-
-            }
-
-        }
-
-
-        /* Reset */
-
-        if (
-            event.target.closest(
-                "#resetData"
-            )
-        ) {
-
-            const confirmed =
-                confirm(
-                    "Resetar todos os dados locais do FITTRACK?"
-                );
-
-
-            if (confirmed) {
-
-                state =
-                    structuredClone(
-                        defaultState
-                    );
-
-                save();
-
-            }
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   FECHAR MODAL CLICANDO FORA
-========================================= */
-
-document.addEventListener(
-    "click",
-    event => {
-
-        if (
-            event.target.classList.contains(
-                "modal"
-            )
-        ) {
-
-            closeModals();
-
-        }
-
-    }
-);
-
-
-/* =========================================
-   NOVO HÁBITO
-========================================= */
-
-$("#habitForm")
-    .addEventListener(
-        "submit",
-        event => {
-
-            event.preventDefault();
-
-
-            const name =
-                $("#habitName")
-                    .value
-                    .trim();
-
-
-            if (!name) return;
-
-
-            state.habits.push({
-
-                id: Date.now(),
-
-                name: name,
-
-                frequency:
-                    $("#habitFrequency").value,
-
-                done: false
-
-            });
-
-
-            event.target.reset();
-
-            closeModals();
-
-            save();
-
-            openScreen("habits");
-
-        }
-    );
-
-
-/* =========================================
-   SONO
-========================================= */
-
-$("#sleepForm")
-    .addEventListene
+        aw
