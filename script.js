@@ -1,1296 +1,1215 @@
-"use strict";
+const STORAGE_KEY = "fittrack_mvp_v4";
 
-/* =====================================================
-   FITTRACK
-   MVP — Frontend + LocalStorage
-===================================================== */
-
-const STORAGE_KEY = "fittrack_mvp_v1";
-
-
-/* =====================================================
-   ESTADO INICIAL
-===================================================== */
 
 const defaultState = {
-  profile: {
-    name: "João",
-    goal: "Manter uma rotina mais ativa",
-    age: "",
-    height: "",
-    weight: ""
-  },
 
-  metrics: {
-    water: 1.5,
-    activity: 35,
-    sleep: 7.33
-  },
+    date:
+        new Date()
+            .toISOString()
+            .slice(0, 10),
 
-  goals: {
-    water: 2,
-    activity: 50,
-    sleep: 8,
-    habits: 5
-  },
+    water: 0,
 
-  habits: [
-    {
-      id: 1,
-      name: "Beber água ao longo do dia",
-      frequency: "Todos os dias",
-      completed: false,
-      streak: 12
+    activity: 0,
+
+    sleep: 0,
+
+    habits: [
+
+        {
+            id: 1,
+            name: "Beber água",
+            frequency: "Diário",
+            done: false
+        },
+
+        {
+            id: 2,
+            name: "Caminhar",
+            frequency: "Diário",
+            done: false
+        },
+
+        {
+            id: 3,
+            name: "Dormir no horário",
+            frequency: "Diário",
+            done: false
+        }
+
+    ],
+
+    goals: {
+
+        water: 2,
+
+        activity: 30,
+
+        sleep: 8,
+
+        habits: 3
+
     },
 
-    {
-      id: 2,
-      name: "Caminhar",
-      frequency: "Todos os dias",
-      completed: false,
-      streak: 7
+    profile: {
+
+        name: "Você",
+
+        goal:
+            "Criar uma rotina mais consistente",
+
+        age: "",
+
+        height: "",
+
+        weight: ""
+
     },
 
-    {
-      id: 3,
-      name: "Ler por 20 minutos",
-      frequency: "Todos os dias",
-      completed: false,
-      streak: 4
-    },
+    history: [
 
-    {
-      id: 4,
-      name: "Organizar a rotina",
-      frequency: "Segunda a sexta",
-      completed: false,
-      streak: 3
-    },
+        60,
+        75,
+        80,
+        65,
+        90,
+        85,
+        95
 
-    {
-      id: 5,
-      name: "Desconectar antes de dormir",
-      frequency: "Todos os dias",
-      completed: false,
-      streak: 2
-    }
-  ],
+    ]
 
-  week: [60, 75, 80, 65, 90, 85, 95],
-
-  lastDate: getTodayKey()
 };
 
-
-/* =====================================================
-   ESTADO
-===================================================== */
 
 let state = loadState();
 
 
-/* =====================================================
-   ELEMENTOS
-===================================================== */
-
-const landing = document.getElementById("landing");
-const app = document.getElementById("app");
-
-const toast = document.getElementById("toast");
-
-const menuToggle = document.getElementById("menu-toggle");
-const mainNav = document.getElementById("main-nav");
-
-const siteHeader = document.getElementById("site-header");
-
-
-/* =====================================================
-   UTILIDADES
-===================================================== */
-
-function getTodayKey() {
-  const date = new Date();
-
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
-  ].join("-");
-}
-
+/* =========================================
+   STORAGE
+========================================= */
 
 function loadState() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (!saved) {
-      return structuredClone(defaultState);
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(STORAGE_KEY)
+            );
+
+
+        if (saved) {
+
+            const today =
+                new Date()
+                    .toISOString()
+                    .slice(0, 10);
+
+
+            if (saved.date !== today) {
+
+                saved.date = today;
+
+                saved.water = 0;
+
+                saved.activity = 0;
+
+                saved.sleep = 0;
+
+                saved.habits =
+                    (saved.habits || [])
+                        .map(h => ({
+                            ...h,
+                            done: false
+                        }));
+
+            }
+
+
+            return {
+
+                ...structuredClone(defaultState),
+
+                ...saved
+
+            };
+
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Não foi possível carregar os dados."
+        );
+
     }
 
-    const parsed = JSON.parse(saved);
-
-    return {
-      ...structuredClone(defaultState),
-      ...parsed,
-      profile: {
-        ...defaultState.profile,
-        ...(parsed.profile || {})
-      },
-      metrics: {
-        ...defaultState.metrics,
-        ...(parsed.metrics || {})
-      },
-      goals: {
-        ...defaultState.goals,
-        ...(parsed.goals || {})
-      },
-      habits: Array.isArray(parsed.habits)
-        ? parsed.habits
-        : structuredClone(defaultState.habits),
-
-      week: Array.isArray(parsed.week)
-        ? parsed.week
-        : [...defaultState.week]
-    };
-
-  } catch (error) {
-    console.error("Erro ao carregar dados:", error);
 
     return structuredClone(defaultState);
-  }
 }
 
 
-function saveState() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(state)
-  );
+function save() {
+
+    localStorage.setItem(
+
+        STORAGE_KEY,
+
+        JSON.stringify(state)
+
+    );
+
+    renderAll();
 }
 
 
-function showToast(message) {
-  if (!toast) return;
+/* =========================================
+   HELPERS
+========================================= */
 
-  toast.textContent = message;
-
-  toast.classList.add("show");
-
-  clearTimeout(showToast.timer);
-
-  showToast.timer = setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2600);
-}
+const $ =
+    selector =>
+        document.querySelector(selector);
 
 
-function getInitial(name) {
-  if (!name) return "J";
-
-  return name
-    .trim()
-    .charAt(0)
-    .toUpperCase();
-}
-
-
-function clamp(value, min, max) {
-  return Math.min(
-    Math.max(value, min),
-    max
-  );
-}
+const $$ =
+    selector =>
+        [...document.querySelectorAll(selector)];
 
 
 function percentage(value, goal) {
-  if (!goal || goal <= 0) return 0;
 
-  return clamp(
-    Math.round((value / goal) * 100),
-    0,
-    100
-  );
-}
+    return Math.min(
 
+        100,
 
-/* =====================================================
-   DATA
-===================================================== */
+        Math.round(
 
-function formatDate() {
-  const date = new Date();
+            ((Number(value) || 0) /
+            (Number(goal) || 1)) *
+            100
 
-  return new Intl.DateTimeFormat(
-    "pt-BR",
-    {
-      weekday: "long",
-      day: "2-digit",
-      month: "long"
-    }
-  ).format(date);
-}
-
-
-function formatSleep(decimalHours) {
-  const hours = Math.floor(decimalHours);
-
-  const minutes = Math.round(
-    (decimalHours - hours) * 60
-  );
-
-  return `${hours}h ${String(minutes).padStart(2, "0")}`;
-}
-
-
-/* =====================================================
-   RESET DIÁRIO
-===================================================== */
-
-function resetDailyIfNeeded() {
-
-  const today = getTodayKey();
-
-  if (state.lastDate === today) {
-    return;
-  }
-
-  state.lastDate = today;
-
-  state.metrics = {
-    water: 0,
-    activity: 0,
-    sleep: 0
-  };
-
-  state.habits = state.habits.map(habit => ({
-    ...habit,
-    completed: false
-  }));
-
-  saveState();
-}
-
-
-/* =====================================================
-   NAVEGAÇÃO LANDING
-===================================================== */
-
-function openDashboard() {
-
-  landing.classList.add("hidden");
-  app.classList.remove("hidden");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-
-  renderAll();
-
-  showView("overview");
-}
-
-
-function backToSite() {
-
-  app.classList.add("hidden");
-  landing.classList.remove("hidden");
-
-  window.scrollTo({
-    top: 0,
-    behavior: "instant"
-  });
-}
-
-
-document.querySelectorAll(".js-start").forEach(button => {
-
-  button.addEventListener("click", openDashboard);
-
-});
-
-
-document.getElementById("back-site")?.addEventListener(
-  "click",
-  backToSite
-);
-
-
-/* =====================================================
-   MENU PRINCIPAL
-===================================================== */
-
-menuToggle?.addEventListener(
-  "click",
-  () => {
-
-    const opened =
-      mainNav.classList.toggle("open");
-
-    menuToggle.setAttribute(
-      "aria-expanded",
-      opened
-    );
-
-  }
-);
-
-
-mainNav?.querySelectorAll("a").forEach(link => {
-
-  link.addEventListener("click", () => {
-
-    mainNav.classList.remove("open");
-
-    menuToggle?.setAttribute(
-      "aria-expanded",
-      "false"
-    );
-
-  });
-
-});
-
-
-/* =====================================================
-   HEADER SCROLL
-===================================================== */
-
-window.addEventListener(
-  "scroll",
-  () => {
-
-    if (!siteHeader) return;
-
-    siteHeader.classList.toggle(
-      "scrolled",
-      window.scrollY > 30
-    );
-
-  },
-  { passive: true }
-);
-
-
-/* =====================================================
-   NAVEGAÇÃO DO APP
-===================================================== */
-
-document.addEventListener(
-  "click",
-  event => {
-
-    const button =
-      event.target.closest("[data-view]");
-
-    if (!button) return;
-
-    event.preventDefault();
-
-    const view =
-      button.dataset.view;
-
-    if (!view) return;
-
-    showView(view);
-
-  }
-);
-
-
-function showView(viewName) {
-
-  if (!app || app.classList.contains("hidden")) {
-    return;
-  }
-
-  document
-    .querySelectorAll(".app-view")
-    .forEach(view => {
-
-      view.classList.toggle(
-        "active",
-        view.id === `view-${viewName}`
-      );
-
-    });
-
-
-  document
-    .querySelectorAll(".side-link[data-view]")
-    .forEach(link => {
-
-      link.classList.toggle(
-        "active",
-        link.dataset.view === viewName
-      );
-
-    });
-
-
-  if (window.innerWidth <= 760) {
-
-    closeMobileMenu();
-
-  }
-
-  renderAll();
-}
-
-
-function closeMobileMenu() {
-
-  const sidebar =
-    document.querySelector(".sidebar");
-
-  if (sidebar) {
-    sidebar.classList.remove("mobile-open");
-  }
-
-}
-
-
-/* =====================================================
-   MOBILE APP MENU
-===================================================== */
-
-document.getElementById("app-menu")?.addEventListener(
-  "click",
-  () => {
-
-    const views = [
-      ["overview", "Visão geral"],
-      ["habits", "Hábitos"],
-      ["goals", "Metas"],
-      ["progress", "Progresso"],
-      ["profile", "Perfil"]
-    ];
-
-    const menu =
-      views
-        .map(
-          (item, index) =>
-            `${index + 1}. ${item[1]}`
         )
-        .join("\n");
 
-    const answer = prompt(
-      `FITTRACK\n\n${menu}\n\nDigite o número:`
     );
 
-    if (!answer) return;
-
-    const index =
-      Number(answer) - 1;
-
-    if (
-      index >= 0 &&
-      index < views.length
-    ) {
-      showView(views[index][0]);
-    }
-
-  }
-);
+}
 
 
-/* =====================================================
-   RENDER GERAL
-===================================================== */
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /[&<>"']/g,
+            character => ({
+
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#039;"
+
+            })[character]
+        );
+
+}
+
+
+/* =========================================
+   DAILY SCORE
+========================================= */
+
+function getDailyPercentage() {
+
+    const water =
+        percentage(
+            state.water,
+            state.goals.water
+        );
+
+
+    const activity =
+        percentage(
+            state.activity,
+            state.goals.activity
+        );
+
+
+    const sleep =
+        percentage(
+            state.sleep,
+            state.goals.sleep
+        );
+
+
+    const habits =
+        state.habits.length
+
+            ? Math.round(
+                (
+                    state.habits
+                        .filter(h => h.done)
+                        .length /
+                    state.habits.length
+                ) * 100
+            )
+
+            : 0;
+
+
+    return Math.round(
+
+        (
+            water +
+            activity +
+            sleep +
+            habits
+        ) / 4
+
+    );
+
+}
+
+
+/* =========================================
+   RENDER PRINCIPAL
+========================================= */
 
 function renderAll() {
 
-  renderProfile();
+    renderDate();
 
-  renderMetrics();
+    renderOverview();
 
-  renderHabits();
+    renderHabits();
 
-  renderGoals();
+    renderGoals();
 
-  renderCharts();
+    renderCharts();
 
-  renderDate();
-
-}
-
-
-/* =====================================================
-   PERFIL
-===================================================== */
-
-function renderProfile() {
-
-  const name =
-    state.profile.name || "João";
-
-  const initial =
-    getInitial(name);
-
-
-  const greeting =
-    document.getElementById("user-greeting");
-
-  const chipName =
-    document.getElementById("profile-chip-name");
-
-  const profileInitial =
-    document.getElementById("profile-initial");
-
-  const largeAvatar =
-    document.getElementById("large-avatar");
-
-
-  if (greeting) {
-    greeting.textContent = name;
-  }
-
-  if (chipName) {
-    chipName.textContent = name;
-  }
-
-  if (profileInitial) {
-    profileInitial.textContent = initial;
-  }
-
-  if (largeAvatar) {
-    largeAvatar.textContent = initial;
-  }
-
-
-  const mobileAvatar =
-    document.querySelector(".mobile-avatar");
-
-  if (mobileAvatar) {
-    mobileAvatar.textContent = initial;
-  }
-
-
-  const nameInput =
-    document.getElementById("profile-name");
-
-  const goalInput =
-    document.getElementById("profile-goal");
-
-  const ageInput =
-    document.getElementById("profile-age");
-
-  const heightInput =
-    document.getElementById("profile-height");
-
-  const weightInput =
-    document.getElementById("profile-weight");
-
-
-  if (nameInput) {
-    nameInput.value =
-      state.profile.name || "";
-  }
-
-  if (goalInput) {
-    goalInput.value =
-      state.profile.goal || "";
-  }
-
-  if (ageInput) {
-    ageInput.value =
-      state.profile.age || "";
-  }
-
-  if (heightInput) {
-    heightInput.value =
-      state.profile.height || "";
-  }
-
-  if (weightInput) {
-    weightInput.value =
-      state.profile.weight || "";
-  }
+    renderProfile();
 
 }
 
 
-/* =====================================================
-   DATA / DATA ATUAL
-===================================================== */
+/* =========================================
+   DATE
+========================================= */
 
 function renderDate() {
 
-  const element =
-    document.getElementById("current-date");
-
-  if (!element) return;
-
-  element.textContent =
-    formatDate();
-}
+    const dateElement =
+        $("#todayLabel");
 
 
-/* =====================================================
-   MÉTRICAS
-===================================================== */
-
-function renderMetrics() {
-
-  const waterPercent =
-    percentage(
-      state.metrics.water,
-      state.goals.water
-    );
-
-  const activityPercent =
-    percentage(
-      state.metrics.activity,
-      state.goals.activity
-    );
-
-  const sleepPercent =
-    percentage(
-      state.metrics.sleep,
-      state.goals.sleep
-    );
+    if (!dateElement) return;
 
 
-  const completed =
-    state.habits.filter(
-      habit => habit.completed
-    ).length;
-
-  const total =
-    state.habits.length;
-
-
-  const habitPercent =
-    total
-      ? percentage(completed, total)
-      : 0;
-
-
-  setText(
-    "water-value",
-    state.metrics.water.toFixed(2)
-  );
-
-  setText(
-    "water-percent",
-    `${waterPercent}% da meta`
-  );
-
-  setWidth(
-    "water-bar",
-    waterPercent
-  );
-
-
-  setText(
-    "activity-value",
-    Math.round(state.metrics.activity)
-  );
-
-  setText(
-    "activity-percent",
-    `${activityPercent}% da meta`
-  );
-
-  setWidth(
-    "activity-bar",
-    activityPercent
-  );
-
-
-  setText(
-    "sleep-value",
-    formatSleep(state.metrics.sleep)
-  );
-
-  setText(
-    "sleep-percent",
-    `${sleepPercent}% da meta`
-  );
-
-  setWidth(
-    "sleep-bar",
-    sleepPercent
-  );
-
-
-  setText(
-    "habits-complete",
-    completed
-  );
-
-  setText(
-    "habits-total",
-    total
-  );
-
-  setText(
-    "habits-percent",
-    `${habitPercent}% concluído`
-  );
-
-  setWidth(
-    "habits-bar",
-    habitPercent
-  );
-
-
-  const streak =
-    calculateCurrentStreak();
-
-  setText(
-    "streak-value",
-    streak
-  );
+    dateElement.textContent =
+        new Date().toLocaleDateString(
+            "pt-BR",
+            {
+                weekday: "long",
+                day: "2-digit",
+                month: "long"
+            }
+        );
 
 }
 
 
-function setText(id, value) {
+/* =========================================
+   OVERVIEW
+========================================= */
 
-  const element =
-    document.getElementById(id);
+function renderOverview() {
 
-  if (element) {
-    element.textContent = value;
-  }
-
-}
+    const userName =
+        $("#userName");
 
 
-function setWidth(id, percentageValue) {
+    if (userName) {
 
-  const element =
-    document.getElementById(id);
+        userName.textContent =
+            state.profile.name || "Você";
 
-  if (!element) return;
-
-  element.style.width =
-    `${clamp(percentageValue, 0, 100)}%`;
-
-}
-
-
-/* =====================================================
-   ÁGUA
-===================================================== */
-
-document.getElementById("add-water")?.addEventListener(
-  "click",
-  () => {
-
-    state.metrics.water =
-      Math.round(
-        (state.metrics.water + 0.25) * 100
-      ) / 100;
-
-    saveState();
-
-    renderAll();
-
-    showToast(
-      "💧 +250ml adicionados!"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   ATIVIDADE
-===================================================== */
-
-document.getElementById("add-activity")?.addEventListener(
-  "click",
-  () => {
-
-    state.metrics.activity += 5;
-
-    saveState();
-
-    renderAll();
-
-    showToast(
-      "🚶 +5 minutos registrados!"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   SONO
-===================================================== */
-
-document.getElementById("edit-sleep")?.addEventListener(
-  "click",
-  () => {
-
-    const modal =
-      document.getElementById("sleep-modal");
-
-    if (!modal) return;
-
-    const hours =
-      Math.floor(state.metrics.sleep);
-
-    const minutes =
-      Math.round(
-        (state.metrics.sleep - hours) * 60
-      );
-
-    const hoursInput =
-      document.getElementById("sleep-hours");
-
-    const minutesInput =
-      document.getElementById("sleep-minutes");
-
-
-    if (hoursInput) {
-      hoursInput.value = hours;
-    }
-
-    if (minutesInput) {
-      minutesInput.value = minutes;
-    }
-
-    openModal(modal);
-
-  }
-);
-
-
-document.getElementById("sleep-form")?.addEventListener(
-  "submit",
-  event => {
-
-    event.preventDefault();
-
-    const hours =
-      Number(
-        document.getElementById(
-          "sleep-hours"
-        ).value
-      );
-
-    const minutes =
-      Number(
-        document.getElementById(
-          "sleep-minutes"
-        ).value
-      );
-
-
-    if (
-      !Number.isFinite(hours) ||
-      !Number.isFinite(minutes)
-    ) {
-      return;
     }
 
 
-    state.metrics.sleep =
-      hours + minutes / 60;
+    $("#dailyPercent").textContent =
+        getDailyPercentage() + "%";
 
 
-    saveState();
-
-    closeAllModals();
-
-    renderAll();
-
-    showToast(
-      "🌙 Sono atualizado!"
-    );
-
-  }
-);
+    $("#waterValue").textContent =
+        Number(state.water)
+            .toFixed(2)
+            .replace(".", ",");
 
 
-/* =====================================================
-   HÁBITOS
-===================================================== */
-
-function renderHabits() {
-
-  const overview =
-    document.getElementById(
-      "overview-habits"
-    );
-
-  const all =
-    document.getElementById(
-      "all-habits"
-    );
+    $("#activityValue").textContent =
+        state.activity;
 
 
-  const html =
-    state.habits
-      .map(habit => habitHTML(habit))
-      .join("");
+    $("#sleepValue").textContent =
+        Number(state.sleep)
+            .toFixed(1)
+            .replace(".", ",");
 
 
-  if (overview) {
-    overview.innerHTML =
-      state.habits.length
-        ? html
-        : emptyHabitsHTML();
-  }
+    $("#habitDone").textContent =
+        state.habits
+            .filter(h => h.done)
+            .length;
 
 
-  if (all) {
-    all.innerHTML =
-      state.habits.length
-        ? html
-        : emptyHabitsHTML();
-  }
+    $("#habitTotal").textContent =
+        state.habits.length;
 
 
-  setText(
-    "habit-summary",
-    `${state.habits.length} ${
-      state.habits.length === 1
-        ? "hábito"
-        : "hábitos"
-    }`
-  );
-
-}
+    $("#waterBar").style.width =
+        percentage(
+            state.water,
+            state.goals.water
+        ) + "%";
 
 
-function habitHTML(habit) {
-
-  return `
-    <div
-      class="habit-item ${
-        habit.completed ? "completed" : ""
-      }"
-      data-habit-id="${habit.id}"
-    >
-
-      <button
-        class="habit-check"
-        data-habit-toggle="${habit.id}"
-        aria-label="Marcar hábito"
-      >
-        ✓
-      </button>
-
-      <div class="habit-info">
-
-        <strong>
-          ${escapeHTML(habit.name)}
-        </strong>
-
-        <small>
-          ${escapeHTML(habit.frequency)}
-        </small>
-
-      </div>
-
-      <span class="habit-streak">
-        🔥 ${habit.streak}d
-      </span>
-
-      <button
-        class="habit-delete"
-        data-habit-delete="${habit.id}"
-        aria-label="Excluir hábito"
-      >
-        ×
-      </button>
-
-    </div>
-  `;
-}
+    $("#activityBar").style.width =
+        percentage(
+            state.activity,
+            state.goals.activity
+        ) + "%";
 
 
-function emptyHabitsHTML() {
+    $("#sleepBar").style.width =
+        percentage(
+            state.sleep,
+            state.goals.sleep
+        ) + "%";
 
-  return `
-    <div class="habit-item">
 
-      <div class="habit-info">
+    const habitPercentage =
+        state.habits.length
 
-        <strong>
-          Nenhum hábito criado
-        </strong>
+            ? (
+                state.habits
+                    .filter(h => h.done)
+                    .length /
+                state.habits.length
+            ) * 100
 
-        <small>
-          Clique em “Novo hábito” para começar.
-        </small>
+            : 0;
 
-      </div>
 
-    </div>
-  `;
+    $("#habitBar").style.width =
+        habitPercentage + "%";
 
 }
 
 
-/* =====================================================
-   EVENTOS DE HÁBITOS
-===================================================== */
+/* =========================================
+   GRÁFICOS
+========================================= */
 
-document.addEventListener(
-  "click",
-  event => {
+function renderCharts() {
 
-    const toggle =
-      event.target.closest(
-        "[data-habit-toggle]"
-      );
-
-    const deleteButton =
-      event.target.closest(
-        "[data-habit-delete]"
-      );
-
-
-    if (toggle) {
-
-      const id =
-        Number(toggle.dataset.habitToggle);
-
-      toggleHabit(id);
-
-      return;
-    }
-
-
-    if (deleteButton) {
-
-      const id =
-        Number(deleteButton.dataset.habitDelete);
-
-      deleteHabit(id);
-
-    }
-
-  }
-);
-
-
-function toggleHabit(id) {
-
-  const habit =
-    state.habits.find(
-      item => item.id === id
+    renderChart(
+        "#miniChart",
+        state.history
     );
 
-  if (!habit) return;
 
-  habit.completed =
-    !habit.completed;
-
-
-  if (habit.completed) {
-
-    habit.streak += 1;
-
-    showToast(
-      "🔥 Hábito concluído!"
+    renderChart(
+        "#bigChart",
+        state.history
     );
-
-  } else {
-
-    habit.streak =
-      Math.max(
-        0,
-        habit.streak - 1
-      );
-
-    showToast(
-      "Hábito desmarcado."
-    );
-
-  }
-
-
-  updateWeek();
-
-  saveState();
-
-  renderAll();
 
 }
 
 
-function deleteHabit(id) {
+function renderChart(
+    selector,
+    data
+) {
 
-  const habit =
-    state.habits.find(
-      item => item.id === id
-    );
-
-  if (!habit) return;
-
-
-  const confirmed =
-    confirm(
-      `Excluir o hábito "${habit.name}"?`
-    );
-
-  if (!confirmed) return;
+    const element =
+        $(selector);
 
 
-  state.habits =
-    state.habits.filter(
-      item => item.id !== id
-    );
+    if (!element) return;
 
 
-  updateWeek();
+    const labels = [
 
-  saveState();
+        "Seg",
+        "Ter",
+        "Qua",
+        "Qui",
+        "Sex",
+        "Sáb",
+        "Dom"
 
-  renderAll();
+    ];
 
-  showToast(
-    "Hábito excluído."
-  );
+
+    element.innerHTML =
+
+        data.map(
+
+            (value, index) => `
+
+                <span
+                    style="height:${Math.max(
+                        8,
+                        value
+                    )}%"
+                >
+
+                    <small>
+                        ${labels[index]}
+                    </small>
+
+                </span>
+
+            `
+
+        ).join("");
 
 }
 
 
-/* =====================================================
-   NOVO HÁBITO
-===================================================== */
-
-document.getElementById("new-habit")?.addEventListener(
-  "click",
-  () => {
-
-    const modal =
-      document.getElementById(
-        "habit-modal"
-      );
-
-    if (!modal) return;
-
-    const input =
-      document.getElementById(
-        "habit-name"
-      );
-
-    if (input) {
-      input.value = "";
-    }
-
-    openModal(modal);
-
-  }
-);
-
-
-document.getElementById("habit-form")?.addEventListener(
-  "submit",
-  event => {
-
-    event.preventDefault();
-
-
-    const nameInput =
-      document.getElementById(
-        "habit-name"
-      );
-
-    const frequencyInput =
-      document.getElementById(
-        "habit-frequency"
-      );
-
-
-    const name =
-      nameInput.value.trim();
-
-    const frequency =
-      frequencyInput.value;
-
-
-    if (!name) {
-      showToast(
-        "Digite o nome do hábito."
-      );
-
-      return;
-    }
-
-
-    const id =
-      Date.now();
-
-
-    state.habits.push({
-
-      id,
-
-      name,
-
-      frequency,
-
-      completed: false,
-
-      streak: 0
-
-    });
-
-
-    saveState();
-
-    closeAllModals();
-
-    renderAll();
-
-    showToast(
-      "✓ Novo hábito criado!"
-    );
-
-  }
-);
-
-
-/* =====================================================
-   METAS
-===================================================== */
+/* =========================================
+   GOALS
+========================================= */
 
 function renderGoals() {
 
-  const container =
-    document.getElementById(
-      "goals-grid"
+    const doneHabits =
+        state.habits
+            .filter(h => h.done)
+            .length;
+
+
+    const goals = [
+
+        {
+            icon: "💧",
+            name: "Água",
+            value:
+                `${Number(state.water)
+                    .toFixed(2)
+                    .replace(".", ",")} / ${state.goals.water} L`,
+            percentage:
+                percentage(
+                    state.water,
+                    state.goals.water
+                )
+        },
+
+        {
+            icon: "🏃",
+            name: "Atividade",
+            value:
+                `${state.activity} / ${state.goals.activity} min`,
+            percentage:
+                percentage(
+                    state.activity,
+                    state.goals.activity
+                )
+        },
+
+        {
+            icon: "◷",
+            name: "Sono",
+            value:
+                `${Number(state.sleep)
+                    .toFixed(1)
+                    .replace(".", ",")} / ${state.goals.sleep} h`,
+            percentage:
+                percentage(
+                    state.sleep,
+                    state.goals.sleep
+                )
+        },
+
+        {
+            icon: "✓",
+            name: "Hábitos",
+            value:
+                `${doneHabits} / ${state.goals.habits}`,
+            percentage:
+                Math.min(
+                    100,
+                    Math.round(
+                        doneHabits /
+                        state.goals.habits *
+                        100
+                    )
+                )
+        }
+
+    ];
+
+
+    const summary =
+        $("#goalSummary");
+
+
+    if (summary) {
+
+        summary.innerHTML =
+            goals.map(goal => `
+
+                <div class="goal-row">
+
+                    <span>
+                        ${goal.icon}
+                    </span>
+
+                    <div>
+
+                        <b>
+                            ${goal.name}
+                        </b>
+
+                        <small>
+                            ${goal.value}
+                        </small>
+
+                    </div>
+
+                    <strong>
+                        ${goal.percentage}%
+                    </strong>
+
+                </div>
+
+            `).join("");
+
+    }
+
+
+    const list =
+        $("#goalList");
+
+
+    if (list) {
+
+        const keys = [
+
+            "water",
+            "activity",
+            "sleep",
+            "habits"
+
+        ];
+
+
+        list.innerHTML =
+            goals.map(
+                (goal, index) => `
+
+                    <div class="goal-item">
+
+                        <span>
+                            ${goal.icon}
+                        </span>
+
+                        <div>
+
+                            <b>
+                                ${goal.name}
+                            </b>
+
+                            <small>
+                                Meta atual:
+                                ${goal.value.split(" / ")[1]}
+                            </small>
+
+                        </div>
+
+                        <strong class="goal-value">
+                            ${goal.percentage}%
+                        </strong>
+
+                        <button
+                            class="mini-btn edit-goal"
+                            data-goal="${keys[index]}"
+                        >
+                            Editar
+                        </button>
+
+                    </div>
+
+                `
+            ).join("");
+
+    }
+
+}
+
+
+/* =========================================
+   HABITS
+========================================= */
+
+function renderHabits() {
+
+    const list =
+        $("#habitList");
+
+
+    if (!list) return;
+
+
+    if (!state.habits.length) {
+
+        list.innerHTML = `
+
+            <div class="panel">
+
+                <p>
+                    Nenhum hábito criado ainda.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+
+        state.habits.map(
+            habit => `
+
+                <div class="habit-item">
+
+                    <button
+                        class="check ${
+                            habit.done
+                                ? "done"
+                                : ""
+                        }"
+                        data-toggle="${habit.id}"
+                    >
+                        ${
+                            habit.done
+                                ? "✓"
+                                : ""
+                        }
+                    </button>
+
+
+                    <div class="habit-main">
+
+                        <b>
+                            ${escapeHTML(
+                                habit.name
+                            )}
+                        </b>
+
+                        <small>
+                            ${escapeHTML(
+                                habit.frequency
+                            )}
+                        </small>
+
+                    </div>
+
+
+                    <div class="habit-actions">
+
+                        <button
+                            class="mini-btn danger"
+                            data-delete="${habit.id}"
+                        >
+                            Excluir
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `
+        ).join("");
+
+}
+
+
+/* =========================================
+   PROFILE
+========================================= */
+
+function renderProfile() {
+
+    $("#profileName").value =
+        state.profile.name || "";
+
+
+    $("#profileGoal").value =
+        state.profile.goal || "";
+
+
+    $("#profileAge").value =
+        state.profile.age || "";
+
+
+    $("#profileHeight").value =
+        state.profile.height || "";
+
+
+    $("#profileWeight").value =
+        state.profile.weight || "";
+
+}
+
+
+/* =========================================
+   NAVEGAÇÃO
+========================================= */
+
+function openScreen(screen) {
+
+    $$(".side-link")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.screen === screen
+            );
+
+        });
+
+
+    $$(".screen")
+        .forEach(section => {
+
+            section.classList.toggle(
+
+                "active",
+
+                section.id ===
+                `screen-${screen}`
+
+            );
+
+        });
+
+
+    const titles = {
+
+        overview: "Visão geral",
+
+        habits: "Hábitos",
+
+        goals: "Metas",
+
+        progress: "Progresso",
+
+        help: "Ajuda",
+
+        profile: "Perfil"
+
+    };
+
+
+    $("#screenTitle").textContent =
+        titles[screen] || "FITTRACK";
+
+
+    document
+        .querySelector(".app-shell")
+        ?.scrollIntoView({
+
+            behavior: "smooth",
+
+            block: "start"
+
+        });
+
+}
+
+
+/* =========================================
+   MODAIS
+========================================= */
+
+function openModal(id) {
+
+    const modal = $(id);
+
+
+    if (!modal) return;
+
+
+    modal.classList.add("open");
+
+    modal.setAttribute(
+        "aria-hidden",
+        "false"
     );
 
-  if (!container) return;
+}
 
 
-  const habitsCompleted =
-    state.habits.filter(
-      habit => habit.completed
-    ).length;
+function closeModals() {
+
+    $$(".modal")
+        .forEach(modal => {
+
+            modal.classList.remove("open");
+
+            modal.setAttribute(
+                "aria-hidden",
+                "true"
+            );
+
+        });
+
+}
 
 
-  const goals = [
+/* =========================================
+   CLIQUES
+========================================= */
 
-    {
-      key: "water",
-      icon: "💧",
-      title: "Água",
-      current: state.metrics.water,
-      target: state.goals.water,
-      unit: "L"
-    },
+document.addEventListener(
+    "click",
+    event => {
 
-    {
-      key: "activity",
-      icon: "🚶",
-      title: "Atividade",
-      current: state.metrics.activity,
-      target: state.goals.activity,
-      unit: "min"
-    },
+        const screenButton =
+            event.target.closest(
+                "[data-screen]"
+            );
 
-    {
-      key: "sleep",
-      icon: "☾",
-  
+
+        if (screenButton) {
+
+            openScreen(
+                screenButton.dataset.screen
+            );
+
+        }
+
+
+        const targetButton =
+            event.target.closest(
+                "[data-screen-target]"
+            );
+
+
+        if (targetButton) {
+
+            openScreen(
+                targetButton.dataset.screenTarget
+            );
+
+        }
+
+
+        const openApp =
+            event.target.closest(
+                "[data-open-app]"
+            );
+
+
+        if (openApp) {
+
+            openScreen("overview");
+
+        }
+
+
+        const action =
+            event.target.closest(
+                "[data-action]"
+            )?.dataset.action;
+
+
+        /* Água */
+
+        if (action === "water") {
+
+            state.water =
+                Math.min(
+                    10,
+                    state.water + 0.25
+                );
+
+            save();
+
+        }
+
+
+        /* Atividade */
+
+        if (action === "activity") {
+
+            state.activity =
+                Math.min(
+                    300,
+                    state.activity + 10
+                );
+
+            save();
+
+        }
+
+
+        /* Sono */
+
+        if (action === "sleep") {
+
+            openModal(
+                "#sleepModal"
+            );
+
+        }
+
+
+        /* Novo hábito */
+
+        if (
+            event.target.closest(
+                "#newHabit"
+            )
+        ) {
+
+            openModal(
+                "#habitModal"
+            );
+
+        }
+
+
+        /* Fechar */
+
+        if (
+            event.target.closest(
+                "[data-close-modal]"
+            )
+        ) {
+
+            closeModals();
+
+        }
+
+
+        /* Toggle hábito */
+
+        const toggle =
+            event.target.closest(
+                "[data-toggle]"
+            );
+
+
+        if (toggle) {
+
+            const habit =
+                state.habits.find(
+                    item =>
+                        item.id ==
+                        toggle.dataset.toggle
+                );
+
+
+            if (habit) {
+
+                habit.done =
+                    !habit.done;
+
+                save();
+
+            }
+
+        }
+
+
+        /* Excluir hábito */
+
+        const deleteButton =
+            event.target.closest(
+                "[data-delete]"
+            );
+
+
+        if (deleteButton) {
+
+            state.habits =
+                state.habits.filter(
+                    item =>
+                        item.id !=
+                        deleteButton.dataset.delete
+                );
+
+            save();
+
+        }
+
+
+        /* Editar meta */
+
+        const editGoal =
+            event.target.closest(
+                ".edit-goal"
+            );
+
+
+        if (editGoal) {
+
+            const key =
+                editGoal.dataset.goal;
+
+
+            const labels = {
+
+                water:
+                    "Litros de água",
+
+                activity:
+                    "Minutos de atividade",
+
+                sleep:
+                    "Horas de sono",
+
+                habits:
+                    "Hábitos por dia"
+
+            };
+
+
+            const value =
+                prompt(
+
+                    `Nova meta — ${labels[key]}`,
+
+                    state.goals[key]
+
+                );
+
+
+            if (
+                value !== null &&
+                !isNaN(value) &&
+                Number(value) > 0
+            ) {
+
+                state.goals[key] =
+                    Number(value);
+
+                save();
+
+            }
+
+        }
+
+
+        /* Reset */
+
+        if (
+            event.target.closest(
+                "#resetData"
+            )
+        ) {
+
+            const confirmed =
+                confirm(
+                    "Resetar todos os dados locais do FITTRACK?"
+                );
+
+
+            if (confirmed) {
+
+                state =
+                    structuredClone(
+                        defaultState
+                    );
+
+                save();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   FECHAR MODAL CLICANDO FORA
+========================================= */
+
+document.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target.classList.contains(
+                "modal"
+            )
+        ) {
+
+            closeModals();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   NOVO HÁBITO
+========================================= */
+
+$("#habitForm")
+    .addEventListener(
+        "submit",
+        event => {
+
+            event.preventDefault();
+
+
+            const name =
+                $("#habitName")
+                    .value
+                    .trim();
+
+
+            if (!name) return;
+
+
+            state.habits.push({
+
+                id: Date.now(),
+
+                name: name,
+
+                frequency:
+                    $("#habitFrequency").value,
+
+                done: false
+
+            });
+
+
+            event.target.reset();
+
+            closeModals();
+
+            save();
+
+            openScreen("habits");
+
+        }
+    );
+
+
+/* =========================================
+   SONO
+========================================= */
+
+$("#sleepForm")
+    .addEventListene
